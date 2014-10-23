@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <title>Cdcrush by johndimi</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Cdcrush</h1>
+        <h2>Dramatically reduce the filesize of cd based games for storage/sharing purposes.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/johndimi/cdcrush/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/johndimi/cdcrush/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/johndimi/cdcrush" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h3>
+<a name="what-is-it" class="anchor" href="#what-is-it"><span class="octicon octicon-link"></span></a>What is it?</h3>
+
+<p>Cd crush is a tool to compress and decompress CD images that include CDDA audio and data. It will separate the data and audio tracks of the cd image and then will compress the data and audio seperately. Finally it will create a highly compressed archive including the compressed audio and data files resulting a  highly compressed crushed file. </p>
+
+<p>The reason to compress audio and data seperately is that audio is best compressed using audio codecs, rather than data compression algorithms.</p>
+
+<p>The crushed file (.arc extension) can later be restored by reversing the process. Decompressing all the cd tracks to raw CD data and then joining them together into a raw CD image file along with a .cue descriptor.</p>
+
+<p>The audio can either be compressed with the OGG Vorbis codec or the FLAC codec. The OGG vorbis codec is a lossy audio codec and results in great compression ratios. The 128kb/s OGG bitrate offers very good results and is the default. The FLAC codec, offers a 100% lossless audio compression, but doesn't offer a big compression ratio. But it's there if you want to use it.</p>
+
+<h3>
+<a name="why" class="anchor" href="#why"><span class="octicon octicon-link"></span></a>Why?</h3>
+
+<p>I wanted to make a program to save space on my hard drive where I kept many CD Images of Playstation and PCEngine games. Even though the images were in a compressed archive, most of them still were 400MB+. That's because they all used CDDA audio, which is uncompressed audio. I don't need to have CD quality audio sitting aroung doing nothing. And today's audio codecs are advanced enough to provide very good bitrate/quality ratio. </p>
+
+<p>Since most emulators today work with cue/bin files I wanted to make a program that will compress the audio and data of a cd image, and then be able to be restore it back to a bin/cue file so that an emulator can load it. The results are very satisfying, before a cd image could be 400MB in a 7zipped archive, now the same cd image is around 40MB crushed. Also the audio quality of a restored image still sounds very good, and if you are not an audiophille chances are that you won't notice any difference.</p>
+
+<h3>
+<a name="requirements" class="anchor" href="#requirements"><span class="octicon octicon-link"></span></a>REQUIREMENTS</h3>
+
+<p>node.js     - must by installed on the system
+ffmpeg      - must be installed on the system and be on the path
+ecmtools    - included
+freearc     - included</p>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
