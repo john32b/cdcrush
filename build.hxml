@@ -1,0 +1,8 @@
+# Build release to bin folder
+
+-lib hxnodejs
+-lib djnode
+-cp src
+-main Main
+-js bin/app.js
+-D terminal
