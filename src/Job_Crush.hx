@@ -145,12 +145,15 @@ class Job_Crush extends Job
 	//====================================================;
 	#if debug function addQueue_simulate()
 	{
-		// Report some bogus values.
-		par.sizeBefore = 16040003;
-		par.sizeAfter = 1600003;
-		par.imagePath = "c:\\game.bin";
-		par.cuePath = "c:\\game.cue";
-		par.output = "c:\\game.arc";
+		// Report some bogus values
+		var gamename = Path.parse(Path.basename(par.input)).name;
+		var gamedir = Path.dirname(par.input);
+		par.sizeBefore = 512000000;
+		par.sizeAfter = 32000134;
+		par.imagePath = gamedir + gamename + ".bin";
+		par.cuePath = gamedir + gamename + ".cue";
+		par.output = gamedir + gamename + ".arc";
+		
 		par.cd = new CDInfo();
 		par.cd.tracks_total = 7;
 		

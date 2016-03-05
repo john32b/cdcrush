@@ -2,11 +2,11 @@ package;
 
 import djNode.BaseApp;
 import djNode.Graphics;
+import djNode.Terminal;
 import djNode.task.Job;
 import djNode.task.Task;
 import djNode.term.info.ActionInfo;
 import djNode.term.UserAsk;
-import djNode.Terminal;
 import djNode.tools.LOG;
 import djNode.tools.StrTool;
 
@@ -136,7 +136,7 @@ class Main extends BaseApp
 			if (CDC.batch_mode == "restore")
 			{
 				info.deletePrevLine();
-				info.printPair("Created", inf.cuePath + ".bin & .cue");
+				info.printPair("Created", inf.cuePath + " + .bin");
 				info.printPair("Crushed size", s0);
 				info.printPair("Restored Image size", s1);
 			}

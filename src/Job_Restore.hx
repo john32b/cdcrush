@@ -132,12 +132,14 @@ class Job_Restore extends Job
 	//====================================================;
 	#if debug function addQueue_simulate()
 	{
-		// Report some bogus values.		
-		par.input = "test.arc";
-		par.sizeBefore = 1660000;
-		par.sizeAfter = 16040003;
-		par.imagePath = "c:\\game.bin";
-		par.cuePath = "c:\\game.cue";
+		
+		var gamename = Path.parse(Path.basename(par.input)).name;
+		var gamedir = Path.dirname(par.input);
+			
+		par.sizeBefore = 32000134;
+		par.sizeAfter = 512000000; 
+		par.imagePath = gamedir + gamename + ".bin";
+		par.cuePath = gamedir + gamename + ".cue";
 			
 		add(new FakeTask("Extracting", "progress", 0.5));
 		add(new FakeTask("Restoring track 1", "progress", 0.3));

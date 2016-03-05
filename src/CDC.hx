@@ -158,19 +158,19 @@ class CDC
 		if (simulatedRun) { 
 		switch(batch_mode) {
 			case "crush":
-				fileList = ["c:\\Test Game [JUE].cue"];
+				fileList = ["c:\\Sonic CD [J].cue"];
 				batch_tempdir = "g:\\temp";
 				batch_outputDir = "c:\\";
 				outputDir_Info = ". (Same as source)";
 				batch_quality = 3;
-				queueTotal = 3;
+				queueTotal = 1;
 				return;
 			case "restore":
-				fileList = ["c:\\Test Game [JUE].arc", "c:\\Test2 [J].arc"];
+				fileList = ["c:\\Wipeout [JUE].arc"];
 				batch_tempdir = "g:\\temp";
 				batch_outputDir = "c:\\";
 				outputDir_Info = ". (Same as source)";
-				queueTotal = 2;
+				queueTotal = 1;
 				return;
 		} }
 		#end
