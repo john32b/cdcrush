@@ -1,4 +1,4 @@
-(function (console) { "use strict";
+(function (console, $global) { "use strict";
 var $estr = function() { return js_Boot.__string_rec(this,''); };
 function $extend(from, fields) {
 	function Inherit() {} Inherit.prototype = from; var proto = new Inherit();
@@ -34,19 +34,19 @@ CDC.init = function(fileList_,params) {
 		var _g = CDC.batch_mode;
 		switch(_g) {
 		case "crush":
-			CDC.fileList = ["c:\\Test Game [JUE].cue"];
+			CDC.fileList = ["c:\\Sonic CD [J].cue"];
 			CDC.batch_tempdir = "g:\\temp";
 			CDC.batch_outputDir = "c:\\";
 			CDC.outputDir_Info = ". (Same as source)";
 			CDC.batch_quality = 3;
-			CDC.queueTotal = 3;
+			CDC.queueTotal = 1;
 			return;
 		case "restore":
-			CDC.fileList = ["c:\\Test Game [JUE].arc","c:\\Test2 [J].arc"];
+			CDC.fileList = ["c:\\Wipeout [JUE].arc"];
 			CDC.batch_tempdir = "g:\\temp";
 			CDC.batch_outputDir = "c:\\";
 			CDC.outputDir_Info = ". (Same as source)";
-			CDC.queueTotal = 2;
+			CDC.queueTotal = 1;
 			return;
 		}
 	}
@@ -392,11 +392,13 @@ Job_$Crush.prototype = $extend(djNode_task_Job.prototype,{
 		djNode_task_Job.prototype.start.call(this);
 	}
 	,addQueue_simulate: function() {
-		this.par.sizeBefore = 16040003;
-		this.par.sizeAfter = 1600003;
-		this.par.imagePath = "c:\\game.bin";
-		this.par.cuePath = "c:\\game.cue";
-		this.par.output = "c:\\game.arc";
+		var gamename = js_node_Path.parse(js_node_Path.basename(this.par.input)).name;
+		var gamedir = js_node_Path.dirname(this.par.input);
+		this.par.sizeBefore = 512000000;
+		this.par.sizeAfter = 32000134;
+		this.par.imagePath = gamedir + gamename + ".bin";
+		this.par.cuePath = gamedir + gamename + ".cue";
+		this.par.output = gamedir + gamename + ".arc";
 		this.par.cd = new djNode_tools_CDInfo();
 		this.par.cd.tracks_total = 7;
 		this.add(new djNode_task_FakeTask("Spliting","steps",0.2));
@@ -469,11 +471,12 @@ Job_$Restore.prototype = $extend(djNode_task_Job.prototype,{
 		djNode_task_Job.prototype.start.call(this);
 	}
 	,addQueue_simulate: function() {
-		this.par.input = "test.arc";
-		this.par.sizeBefore = 1660000;
-		this.par.sizeAfter = 16040003;
-		this.par.imagePath = "c:\\game.bin";
-		this.par.cuePath = "c:\\game.cue";
+		var gamename = js_node_Path.parse(js_node_Path.basename(this.par.input)).name;
+		var gamedir = js_node_Path.dirname(this.par.input);
+		this.par.sizeBefore = 32000134;
+		this.par.sizeAfter = 512000000;
+		this.par.imagePath = gamedir + gamename + ".bin";
+		this.par.cuePath = gamedir + gamename + ".cue";
 		this.add(new djNode_task_FakeTask("Extracting","progress",0.5));
 		this.add(new djNode_task_FakeTask("Restoring track 1","progress",0.3));
 		this.add(new djNode_task_FakeTask("Restoring track 2","progress",0.3));
@@ -891,7 +894,7 @@ Main.prototype = $extend(djNode_BaseApp.prototype,{
 			var s1 = djNode_tools_StrTool.bytesToMBStr(inf.sizeAfter) + "MB";
 			if(CDC.batch_mode == "restore") {
 				this.info.deletePrevLine();
-				this.info.printPair("Created",inf.cuePath + ".bin & .cue");
+				this.info.printPair("Created",inf.cuePath + " + .bin");
 				this.info.printPair("Crushed size",s0);
 				this.info.printPair("Restored Image size",s1);
 			} else {
@@ -3566,7 +3569,7 @@ js_Boot.__isNativeObj = function(o) {
 	return js_Boot.__nativeClassName(o) != null;
 };
 js_Boot.__resolveNativeClass = function(name) {
-	return (Function("return typeof " + name + " != \"undefined\" ? " + name + " : null"))();
+	return $global[name];
 };
 var js_html_compat_ArrayBuffer = function(a) {
 	if((a instanceof Array) && a.__enum__ == null) {
@@ -3784,10 +3787,10 @@ if(Array.prototype.map == null) Array.prototype.map = function(f) {
 	return a;
 };
 var __map_reserved = {}
-var ArrayBuffer = (Function("return typeof ArrayBuffer != 'undefined' ? ArrayBuffer : null"))() || js_html_compat_ArrayBuffer;
+var ArrayBuffer = $global.ArrayBuffer || js_html_compat_ArrayBuffer;
 if(ArrayBuffer.prototype.slice == null) ArrayBuffer.prototype.slice = js_html_compat_ArrayBuffer.sliceImpl;
-var DataView = (Function("return typeof DataView != 'undefined' ? DataView : null"))() || js_html_compat_DataView;
-var Uint8Array = (Function("return typeof Uint8Array != 'undefined' ? Uint8Array : null"))() || js_html_compat_Uint8Array._new;
+var DataView = $global.DataView || js_html_compat_DataView;
+var Uint8Array = $global.Uint8Array || js_html_compat_Uint8Array._new;
 CDC.AUTHORNAME = "JohnDimi, twitter@jondmt";
 CDC.PROGRAM_NAME = "CD Crush";
 CDC.PROGRAM_VERSION = "1.0";
@@ -3843,6 +3846,6 @@ haxe_io_FPHelper.i64tmp = (function($this) {
 js_Boot.__toStr = {}.toString;
 js_html_compat_Uint8Array.BYTES_PER_ELEMENT = 1;
 Main.main();
-})(typeof console != "undefined" ? console : {log:function(){}});
+})(typeof console != "undefined" ? console : {log:function(){}}, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
 
 //# sourceMappingURL=app.js.map

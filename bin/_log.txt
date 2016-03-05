@@ -1,0 +1,39 @@
+ - LOG -
+ -------
+ - _log.txt
+ - Created: 2016-03-05 15:38:47
+ - App: app.js
+ ---------------------------------------------------
+
+(INFO) 180:BaseApp.hx [ djNode.BaseApp ] - Initializing BaseApp
+(INFO) 283:BaseApp.hx [ djNode.BaseApp ] - Getting Parameters
+(INFO) 158:BaseApp.hx [ djNode.BaseApp ] - Creating Application [ CD Crush ,v1.0 ]
+(INFO) 144:CDC.hx [ CDC ] - -- CDC RUN PARAMETERS --
+(INFO) 145:CDC.hx [ CDC ] -  mode      = crush
+(INFO) 146:CDC.hx [ CDC ] -  quality   = null
+(INFO) 147:CDC.hx [ CDC ] -  outputDir = null
+(INFO) 148:CDC.hx [ CDC ] -  tempdir   = null
+(INFO) 149:CDC.hx [ CDC ] -  files     = [sonic.cue]
+(INFO) 150:CDC.hx [ CDC ] - -------------------------
+(INFO) 114:Task.hx [ djNode.task.Task ] - Task created, name = Spliting, UID = 1
+(INFO) 114:Task.hx [ djNode.task.Task ] - Task created, name = Compressing track 1, UID = 2
+(INFO) 114:Task.hx [ djNode.task.Task ] - Task created, name = Compressing track 2, UID = 3
+(INFO) 114:Task.hx [ djNode.task.Task ] - Task created, name = Compressing track 3, UID = 4
+(INFO) 114:Task.hx [ djNode.task.Task ] - Task created, name = Compressing, UID = 5
+(INFO) 126:Job.hx [ djNode.task.Job ] - Starting new Task [Spliting], remaining (4)
+(INFO) 165:Job.hx [ djNode.task.Job ] - Task complete [Spliting]
+(INFO) 101:FakeTask.hx [ djNode.task.FakeTask ] - killing dummy task...
+(INFO) 126:Job.hx [ djNode.task.Job ] - Starting new Task [Compressing track 1], remaining (3)
+(INFO) 165:Job.hx [ djNode.task.Job ] - Task complete [Compressing track 1]
+(INFO) 101:FakeTask.hx [ djNode.task.FakeTask ] - killing dummy task...
+(INFO) 126:Job.hx [ djNode.task.Job ] - Starting new Task [Compressing track 2], remaining (2)
+(INFO) 165:Job.hx [ djNode.task.Job ] - Task complete [Compressing track 2]
+(INFO) 101:FakeTask.hx [ djNode.task.FakeTask ] - killing dummy task...
+(INFO) 126:Job.hx [ djNode.task.Job ] - Starting new Task [Compressing track 3], remaining (1)
+(INFO) 165:Job.hx [ djNode.task.Job ] - Task complete [Compressing track 3]
+(INFO) 101:FakeTask.hx [ djNode.task.FakeTask ] - killing dummy task...
+(INFO) 126:Job.hx [ djNode.task.Job ] - Starting new Task [Compressing], remaining (0)
+(INFO) 165:Job.hx [ djNode.task.Job ] - Task complete [Compressing]
+(INFO) 101:FakeTask.hx [ djNode.task.FakeTask ] - killing dummy task...
+(INFO) 195:Job.hx [ djNode.task.Job ] - Job [crush] Complete
+(INFO) 595:BaseApp.hx [ djNode.BaseApp ] - App Quit -  Normally
