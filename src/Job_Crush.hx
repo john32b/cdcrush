@@ -46,6 +46,13 @@ class Job_Crush extends Job
 		// --
 		add(new Qtask("-loadingImageInfo", function(t:Qtask) {
 
+			// -- Check to see if the output dir is writable
+			// -- Generate output Folder
+			if (par.outputDir == null) {
+				par.outputDir = par.inputDir;
+			}
+			CDC.isWritable(par.outputDir);
+			
 			// Try to load the file
 			// IF the file is not supported or it does not exist, CDINFO will throw error
 			try{
@@ -53,25 +60,28 @@ class Job_Crush extends Job
 			}catch (e:String) {
 				t._fail(e); return;
 			}
+			
+			par.sizeBefore = par.cd.total_size;
+			
+			LOG.log('Loaded ${par.input}');
+			LOG.log('Image TITLE = ${par.cd.TITLE}');
 
+			var arcFile = par.cd.TITLE + "." + CDC.CDCRUSH_EXTENSION;
+			
+			par.crushedArc = Path.join(par.outputDir, arcFile);
+			LOG.log('Setting output file to ${par.crushedArc}');
+			
+			// Try to see if the output file already exists
+			if (FileTool.pathExists(par.crushedArc) && !CDC.flag_overwrite) {
+				throw '"$arcFile" already exists. \n Run with -w to overwrite files';
+			}
+			
 			// Try to create the temp dir, which is input filename specific
 			if (!CDC.createTempDir(par)) {
 				t._fail('Could not create tempdir at "${par.tempDir}"' , "IO"); 
 				return;
 			}
 			
-			par.sizeBefore = par.cd.total_size;
-			LOG.log('Loaded ${par.input}');
-			LOG.log('Image Path = ${par.cd.image_path}');
-			LOG.log('Image Size = ${par.sizeBefore}');
-			
-			par.output = Path.join(CDC.batch_outputDir, par.cd.TITLE + "." + CDC.CDCRUSH_EXTENSION);
-			LOG.log('Setting output file to ${par.output}');
-			
-			// Try to see if the output file already exists
-			if (FileTool.pathExists(par.output)) {
-				throw '${par.output} already exists. Delete this manually'; /// <-.-- Force with flag
-			}
 			t._complete();
 		}));
 		
@@ -92,7 +102,6 @@ class Job_Crush extends Job
 		// -- Create and Save the CDCRUSH SETTINGS file
 		add(new Qtask('-saveSettings', function(t:Qtask) {
 			par.cd.self_save(Path.join(par.tempDir, CDC.CDCRUSH_SETTINGS));
-			par.cd.self_save(Path.join(par.inputDir, CDC.CDCRUSH_SETTINGS)); /// DEBUG <-------------
 			t._complete();
 		}));
 	
@@ -121,7 +130,7 @@ class Job_Crush extends Job
 			for (i in par.cd.tracks) {
 				listOfFilesToCompress.push(Path.join(par.tempDir, i.filename));
 			}
-			arc.compress(listOfFilesToCompress, par.output);
+			arc.compress(listOfFilesToCompress, par.crushedArc);
 		}));
 		
 		// -- ARC is done, delete files
@@ -133,7 +142,7 @@ class Job_Crush extends Job
 			LOG.log('Deleting "${par.tempDir}"');
 			Fs.rmdirSync(par.tempDir);
 
-			par.sizeAfter = Std.int(Fs.statSync(par.output).size);
+			par.sizeAfter = Std.int(Fs.statSync(par.crushedArc).size);
 			t._complete();
 		}));
 		
@@ -154,7 +163,7 @@ class Job_Crush extends Job
 		par.sizeAfter = 32000134;
 		par.imagePath = gamedir + gamename + ".bin";
 		par.cuePath = gamedir + gamename + ".cue";
-		par.output = gamedir + gamename + ".arc";
+		par.crushedArc = gamedir + gamename + ".arc";
 		
 		par.cd = new CDInfo();
 		par.cd.tracks_total = 7;

@@ -5,8 +5,10 @@ CHANGELOG:
 ----------
 
 V 1.1 
-	. Will create a folder as an output dir if no output folder is defined.
-	
+
+	. BUGFIX, You can now use spaces and symbols at the pathnames. e.g "C:/@ @ #$%^ games/isos @#/"
+	. NEW, Run with "-f" to restore ARC files to separate folders.
+	. NEW, Run with "-w" to overwrite any files during the convertion.
 	. Supports Cue Sheets with multiple track files. Some cuesheets have the tracks 
 	  already cut into multiple files and no splitting is required.
 	  

@@ -38,6 +38,8 @@ class Main extends BaseApp
 		addParam("c", "Crush", "Crush a cd image file (.cue .ccd files)");
 		addParam("r", "Restore", "Restore a crushed image (.arc files)");
 		addParam("-t", "Temp Directory", "Set a custom working directory", true);
+		addParam("-w", "Force Overwrite", "Overwrite any files", false, false, true );
+		addParam("-f", "Restore to Folders", "Restore ARC files to separate folders", false, false);
 		addParam("-q", "Audio compression quality",
 						'1 - ${CDC.audioQualityInfo[0]}#nl' +
 						'2 - ${CDC.audioQualityInfo[1]}#nl' +
@@ -86,7 +88,9 @@ class Main extends BaseApp
 			temp : getOptionParameter('-t'),
 			sim  : params_Options.exists('-sim'),
 			quality: getOptionParameter('-q'),
-			output : params_Output
+			output : params_Output,
+			flag_overwrite : params_Options.exists('-w'),
+			flag_res_to_folders : params_Options.exists('-f')
 		} );
 		
 		// This will triger the first file of the list
@@ -143,9 +147,9 @@ class Main extends BaseApp
 			else // crush
 			{
 				info.deletePrevLine();
-				info.printPair("Created", inf.output);
+				info.printPair("Created", inf.crushedArc);
 				info.printPair("Number of tracks", inf.cd.tracks_total);
-				info.printPair("Image size", s0);
+				info.printPair("Raw size", s0);
 				info.printPair("Crushed size", s1);
 			}
 			

@@ -1,7 +1,7 @@
 CDCRUSH
 ========
 
-**Version:** 1.0
+**Version:** 1.1
 **Author:** John Dimi, <johndimi@outlook.com>, twitter:[@jondmt](https://twitter.com/jondmt)  
 **Language:** Haxe 3.2 **Compiles to:** nodeJS (windows)
 
@@ -12,13 +12,22 @@ CDCRUSH
 This is the source code repository. 
 [Check out the **NPM** page of the project here](https://www.npmjs.com/package/cdcrush)
 
+### CHANGELOG
+
+**Version 1.1** : 	
+. BUGFIX, You can now use spaces and symbols at the pathnames. e.g.
+  `cdcrush "C:/@ @ #$%^ games/isos @#/game.arc"`
+- NEW, run with "-f" to restore ARC files to separate folders.
+- NEW, run with "-w" to overwrite any files during the convertion.
+- Supports Cue Sheets with multiple track files.
+
 ### How to build
 
 You will need:
 - **HAXE** 3.2
 - **hxnodejs** *(nodeJS externs for Haxe)*
- ```haxelib install hxnodejs``
-- **[djNode](https://github.com/johndimi/djNode)** library *(Personal CLI helper library)*
+ ```haxelib install hxnodejs```
+- *[djNode](https://github.com/johndimi/djNode)* library (Personal CLI helper library)
   ```haxelib git djNode https://github.com/johndimi/djNode.git```  
 
 ### To run
@@ -28,7 +37,6 @@ You will need:
 - **ECM tools** are already included in the bin folder
 - Windows
 
-#### More documentation coming some day!
 
 Don't hesitate to contact me by email or twitter. Cheers.
 

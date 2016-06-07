@@ -8,7 +8,9 @@ import djNode.tools.LOG;
 import js.node.Path;
 
 /**
- * Copy a bunch of files
+ * CDCRUSH specific,
+ * The source cd is already multitracked, and it doesn't have to be joined
+ * This MOVES the files from the TEMPDIR to the OUTPUTDIR
  * ...
  */
 class Task_MoveFiles extends Task
@@ -35,7 +37,7 @@ class Task_MoveFiles extends Task
 		arexec.queue_action = function(tr:CueTrack) 
 		{
 			var sourcePath:String = Path.join(par.tempDir, tr.filename);
-			var destPath:String = Path.join(CDC.batch_outputDir, tr.diskFile);
+			var destPath:String = Path.join(par.outputDir, tr.diskFile);
 			
 			FileTool.moveFile(sourcePath, destPath, function() {
 				LOG.log(' Moved file $sourcePath to $destPath');

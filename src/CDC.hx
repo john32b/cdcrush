@@ -29,19 +29,22 @@ class CDCRunParameters
 {
 	// Parsed CUE info, useful to share between tasks
 	public var cd:CDInfo; 
+	
 	// File being processed, can be short or full path
 	public var input:String;
-	// Used in crush, Path of generated ARC
-	public var output:String;
-	// If crushing,  these point to the input files
-	// If restoring, these point to the generated file
-	public var imagePath:String;
-	public var cuePath:String;
+	// Used in crush, FULL Path of generated ARC
+	public var crushedArc:String;
+	
+	public var imagePath:String; // When Restoring Single Tracks
+	public var cuePath:String;   // Whem Restoring Single tracks
+	
 	// Path that the input file is on.
 	// e.g. (If input file is "c:\iso\game.arc" then inputDir == "c:\iso\")
 	public var inputDir:String;
 	// Path that the files are going to be extracted and worked on
 	public var tempDir:String;
+	// MUST BE SET. Every job can have it's own output dir.
+	public var outputDir:String;
 	// Size in bytes, useful for reporting
 	public var sizeBefore:Int;
 	// Size in bytes, useful for reporting
@@ -90,12 +93,19 @@ class CDC
 	];
 	// Temp dir for file operations
 	public static var batch_tempdir(default, null):String;
-	// Output directory for the files
+	// Output directory for the files. If null it's the same as each file's input dir
 	public static var batch_outputDir(default, null):String;
 	// This will be displayed to the user as the output dir.
 	public static var outputDir_Info(default, null):String;
 	// If true, then no real file will be processed, and the outputs will be simulated
 	public static var simulatedRun:Bool = false;
+	
+	// FLAG - w - Overwrite files
+	public static var flag_overwrite:Bool = false;
+	
+	// FLAG - f - Restore to folder
+	public static var flag_res_to_folders:Bool = false;
+	
 	//---------------------------------------------------;
 	// List of files to process
 	static var fileList:Array<String>;
@@ -113,6 +123,7 @@ class CDC
 	public static var onTaskStatus:String->Task->Void;
 	// All operations complete
 	public static var onComplete:Void->Void;
+	
 	
 	//====================================================;
 	// Functions 
@@ -140,10 +151,12 @@ class CDC
 		batch_quality = params.quality;
 		batch_outputDir = params.output;
 		simulatedRun = params.sim;
+		flag_overwrite = params.flag_overwrite;
+		flag_res_to_folders = params.flag_res_to_folders;
 		
 		queueCurrent = 0;
 		queueTotal = fileList.length;
-
+		
 		#if debug
 		// -- SIMULATED RUN --
 		// -  Fake run parameters
@@ -198,35 +211,12 @@ class CDC
 		
 		// -- Check output dir
 		if (batch_outputDir == null) {
-			// I know this is crazy, but if multiple inputs, set the output dir
-			// to be the basedir of the first file. ¯\_(ツ)_/¯ 
-			// I don't want to check for an output for every file.
-			batch_outputDir = Path.dirname(fileList[0]);
 			outputDir_Info = ". (Same as source)";
 		}else {
 			batch_outputDir = Path.normalize(batch_outputDir);
 			outputDir_Info = batch_outputDir + "\\";
 		}
-		
-		// -- Check to see if output dir is writable
-		//    I am checking this early because I don't want to have a job
-		//    fail halfway because it can't write to some directory. Check it now.
-		
-		try {
-			var testFile = "_cdcrush_test_file_temp";
-			// Avoid a bug, where this file exists from a previous failed CDCRUSH process?
-			if (FileTool.pathExists(Path.join(batch_outputDir, testFile)) == false) {
-				Fs.writeFileSync(Path.join(batch_outputDir, testFile),"ok");				
-			}
-			Fs.unlinkSync(Path.join(batch_outputDir, testFile));
-		}catch (e:Dynamic)
-		{
-			if (!FileTool.pathExists(batch_outputDir)) {
-				throw 'Folder "$batch_outputDir" does not exist.';
-			}else {
-				throw 'Can\'t write to output dir "$batch_outputDir" do you have write access?';
-			}
-		}
+
 		
 		// -- Some parameters are sanitized.
 		LOG.log('-- CDC RUN PARAMETERS --');
@@ -254,6 +244,7 @@ class CDC
 		var inf:CDCRunParameters = new CDCRunParameters();
 		inf.input = Path.normalize(fileToProcess);
 		inf.inputDir = Path.dirname(fileToProcess);
+		inf.outputDir = batch_outputDir;
 		inf.tempDir = batch_tempdir;	   // Pass the root of the tempdir, going to be processed first thing
 		
 		inf.queueTotal = queueTotal;	   // Just for infos
@@ -294,7 +285,7 @@ class CDC
 	{
 		// -- Temp Dir check
 		if (par.tempDir == null) {
-			par.tempDir = CDC.batch_outputDir;
+			par.tempDir = par.outputDir;
 		}
 		par.tempDir = Path.join(par.tempDir, generateTempFolderName(Path.parse(par.input).name));
 	
@@ -308,5 +299,32 @@ class CDC
 		return true;
 	}//---------------------------------------------------;
 	
+	
+	
+	
+	
+	// --
+	public static function isWritable(dir:String)
+	{
+		// -- Check to see if output dir is writable
+		//    I am checking this early because I don't want to have a job
+		//    fail halfway because it can't write to some directory. Check it now.
+		
+		try {
+			var testFile = "_cdcrush_test_file_temp";
+			// Avoid a bug, where this file exists from a previous failed CDCRUSH process?
+			if (FileTool.pathExists(Path.join(dir, testFile)) == false) {
+				Fs.writeFileSync(Path.join(dir, testFile), "ok");
+			}
+			Fs.unlinkSync(Path.join(dir, testFile));
+		}catch (e:Dynamic)
+		{
+			if (!FileTool.pathExists(dir)) {
+				throw 'Folder "$dir" does not exist, or can\'t create';
+			}else {
+				throw 'Can\'t write to output dir "$dir" do you have write access?';
+			}
+		}
+	}//---------------------------------------------------;
 	
 }//--//
