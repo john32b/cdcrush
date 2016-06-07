@@ -21,13 +21,6 @@ CDC.init = function(fileList_,params) {
 	CDC.batch_quality = params.quality;
 	CDC.batch_outputDir = params.output;
 	CDC.simulatedRun = params.sim;
-	djNode_tools_LOG.log("-- CDC RUN PARAMETERS --",null,{ fileName : "CDC.hx", lineNumber : 144, className : "CDC", methodName : "init"});
-	djNode_tools_LOG.log(" mode      = " + CDC.batch_mode,null,{ fileName : "CDC.hx", lineNumber : 145, className : "CDC", methodName : "init"});
-	djNode_tools_LOG.log(" quality   = " + CDC.batch_quality,null,{ fileName : "CDC.hx", lineNumber : 146, className : "CDC", methodName : "init"});
-	djNode_tools_LOG.log(" outputDir = " + CDC.batch_outputDir,null,{ fileName : "CDC.hx", lineNumber : 147, className : "CDC", methodName : "init"});
-	djNode_tools_LOG.log(" tempdir   = " + CDC.batch_tempdir,null,{ fileName : "CDC.hx", lineNumber : 148, className : "CDC", methodName : "init"});
-	djNode_tools_LOG.log(" files     = " + Std.string(CDC.fileList),null,{ fileName : "CDC.hx", lineNumber : 149, className : "CDC", methodName : "init"});
-	djNode_tools_LOG.log("-------------------------",null,{ fileName : "CDC.hx", lineNumber : 150, className : "CDC", methodName : "init"});
 	CDC.queueCurrent = 0;
 	CDC.queueTotal = CDC.fileList.length;
 	if(CDC.simulatedRun) {
@@ -72,6 +65,13 @@ CDC.init = function(fileList_,params) {
 		if (e instanceof js__$Boot_HaxeError) e = e.val;
 		if(!djNode_tools_FileTool.pathExists(CDC.batch_outputDir)) throw new js__$Boot_HaxeError("Folder \"" + CDC.batch_outputDir + "\" does not exist."); else throw new js__$Boot_HaxeError("Can't write to output dir \"" + CDC.batch_outputDir + "\" do you have write access?");
 	}
+	djNode_tools_LOG.log("-- CDC RUN PARAMETERS --",null,{ fileName : "CDC.hx", lineNumber : 232, className : "CDC", methodName : "init"});
+	djNode_tools_LOG.log(" mode      = " + CDC.batch_mode,null,{ fileName : "CDC.hx", lineNumber : 233, className : "CDC", methodName : "init"});
+	djNode_tools_LOG.log(" quality   = " + CDC.batch_quality,null,{ fileName : "CDC.hx", lineNumber : 234, className : "CDC", methodName : "init"});
+	djNode_tools_LOG.log(" outputDir = " + CDC.batch_outputDir,null,{ fileName : "CDC.hx", lineNumber : 235, className : "CDC", methodName : "init"});
+	djNode_tools_LOG.log(" tempdir   = " + CDC.batch_tempdir,null,{ fileName : "CDC.hx", lineNumber : 236, className : "CDC", methodName : "init"});
+	djNode_tools_LOG.log(" files     = " + Std.string(CDC.fileList),null,{ fileName : "CDC.hx", lineNumber : 237, className : "CDC", methodName : "init"});
+	djNode_tools_LOG.log("-------------------------",null,{ fileName : "CDC.hx", lineNumber : 238, className : "CDC", methodName : "init"});
 };
 CDC.processNextFile = function() {
 	var fileToProcess = CDC.fileList.shift();
@@ -332,24 +332,24 @@ Job_$Crush.prototype = $extend(djNode_task_Job.prototype,{
 				t._fail("Could not create tempdir at \"" + _g.par.tempDir + "\"","IO");
 				return;
 			}
-			_g.par.sizeBefore = _g.par.cd.image_size;
-			_g.par.cuePath = _g.par.input;
-			_g.par.imagePath = _g.par.cd.image_path;
-			djNode_tools_LOG.log("Loaded " + _g.par.input,null,{ fileName : "Job_Crush.hx", lineNumber : 65, className : "Job_Crush", methodName : "start"});
-			djNode_tools_LOG.log("Image Path = " + _g.par.cd.image_path,null,{ fileName : "Job_Crush.hx", lineNumber : 66, className : "Job_Crush", methodName : "start"});
-			djNode_tools_LOG.log("Image Size = " + _g.par.sizeBefore,null,{ fileName : "Job_Crush.hx", lineNumber : 67, className : "Job_Crush", methodName : "start"});
+			_g.par.sizeBefore = _g.par.cd.total_size;
+			djNode_tools_LOG.log("Loaded " + _g.par.input,null,{ fileName : "Job_Crush.hx", lineNumber : 64, className : "Job_Crush", methodName : "start"});
+			djNode_tools_LOG.log("Image Path = " + _g.par.cd.image_path,null,{ fileName : "Job_Crush.hx", lineNumber : 65, className : "Job_Crush", methodName : "start"});
+			djNode_tools_LOG.log("Image Size = " + _g.par.sizeBefore,null,{ fileName : "Job_Crush.hx", lineNumber : 66, className : "Job_Crush", methodName : "start"});
+			_g.par.output = js_node_Path.join(CDC.batch_outputDir,_g.par.cd.TITLE + "." + "arc");
+			djNode_tools_LOG.log("Setting output file to " + _g.par.output,null,{ fileName : "Job_Crush.hx", lineNumber : 69, className : "Job_Crush", methodName : "start"});
+			if(djNode_tools_FileTool.pathExists(_g.par.output)) throw new js__$Boot_HaxeError("" + _g.par.output + " already exists. Delete this manually");
 			t._complete();
 		}));
 		this.add(new Task_$CutTracks());
 		this.add(new djNode_task_Qtask("-postCut",function(t1) {
-			_g.par.imagePath = js_node_Path.join(CDC.batch_outputDir,_g.par.cd.TITLE + ".bin");
-			_g.par.cuePath = js_node_Path.join(CDC.batch_outputDir,_g.par.cd.TITLE + ".cue");
 			var c = _g.par.cd.tracks_total;
 			while(--c >= 0) _g.addNext(new Task_$CompressTrack(_g.par.cd.tracks[c]));
 			t1._complete();
 		}));
 		this.add(new djNode_task_Qtask("-saveSettings",function(t2) {
 			_g.par.cd.self_save(js_node_Path.join(_g.par.tempDir,"crushdata.json"));
+			_g.par.cd.self_save(js_node_Path.join(_g.par.inputDir,"crushdata.json"));
 			t2._complete();
 		}));
 		var listOfFilesToCompress;
@@ -363,8 +363,6 @@ Job_$Crush.prototype = $extend(djNode_task_Job.prototype,{
 				t3.progress_percent = p;
 				t3.onStatus("progress",t3);
 			});
-			_g.par.output = js_node_Path.join(CDC.batch_outputDir,_g.par.cd.TITLE + "." + "arc");
-			djNode_tools_LOG.log("Setting output file to " + _g.par.output,null,{ fileName : "Job_Crush.hx", lineNumber : 115, className : "Job_Crush", methodName : "start"});
 			listOfFilesToCompress = [];
 			listOfFilesToCompress = [js_node_Path.join(_g.par.tempDir,"crushdata.json")];
 			var _g1 = 0;
@@ -381,10 +379,10 @@ Job_$Crush.prototype = $extend(djNode_task_Job.prototype,{
 			while(_g3 < listOfFilesToCompress.length) {
 				var i1 = listOfFilesToCompress[_g3];
 				++_g3;
-				djNode_tools_LOG.log("Deleting \"" + i1 + "\"",null,{ fileName : "Job_Crush.hx", lineNumber : 128, className : "Job_Crush", methodName : "start"});
+				djNode_tools_LOG.log("Deleting \"" + i1 + "\"",null,{ fileName : "Job_Crush.hx", lineNumber : 130, className : "Job_Crush", methodName : "start"});
 				js_node_Fs.unlinkSync(i1);
 			}
-			djNode_tools_LOG.log("Deleting \"" + _g.par.tempDir + "\"",null,{ fileName : "Job_Crush.hx", lineNumber : 131, className : "Job_Crush", methodName : "start"});
+			djNode_tools_LOG.log("Deleting \"" + _g.par.tempDir + "\"",null,{ fileName : "Job_Crush.hx", lineNumber : 133, className : "Job_Crush", methodName : "start"});
 			js_node_Fs.rmdirSync(_g.par.tempDir);
 			_g.par.sizeAfter = Std["int"](js_node_Fs.statSync(_g.par.output).size);
 			t4._complete();
@@ -458,15 +456,29 @@ Job_$Restore.prototype = $extend(djNode_task_Job.prototype,{
 			while(--c >= 0) _g.addNext(new Task_$RestoreTrack(_g.par.cd.tracks[c]));
 			t1._complete();
 		}));
-		this.add(new Task_$JoinTracks());
-		this.add(new djNode_task_Qtask("-finalize",function(t2) {
-			_g.par.sizeAfter = Std["int"](js_node_Fs.statSync(_g.par.imagePath).size);
-			djNode_tools_LOG.log("Creating CUE at " + _g.par.cuePath,null,{ fileName : "Job_Restore.hx", lineNumber : 116, className : "Job_Restore", methodName : "start"});
-			_g.par.cd.saveAs_Cue(_g.par.cuePath,false,"GENERATED BY CDCRUSH " + "1.0");
-			djNode_tools_LOG.log("Clearing temp dir",null,{ fileName : "Job_Restore.hx", lineNumber : 119, className : "Job_Restore", methodName : "start"});
-			js_node_Fs.unlinkSync(js_node_Path.join(_g.par.tempDir,"crushdata.json"));
-			js_node_Fs.rmdirSync(_g.par.tempDir);
+		this.add(new djNode_task_Qtask("-loadcdinfo",function(t2) {
+			if(_g.par.cd.isMultiImage) _g.addNext(new Task_$MoveFiles()); else _g.addNext(new Task_$JoinTracks());
 			t2._complete();
+		}));
+		this.add(new djNode_task_Qtask("-finalize",function(t3) {
+			_g.par.sizeAfter = _g.par.cd.total_size;
+			djNode_tools_LOG.log("Creating CUE at " + _g.par.cuePath,null,{ fileName : "Job_Restore.hx", lineNumber : 131, className : "Job_Restore", methodName : "start"});
+			_g.par.cd.saveAs_Cue(_g.par.cuePath,"GENERATED BY CDCRUSH " + "1.1");
+			djNode_tools_LOG.log("Clearing temp dir",null,{ fileName : "Job_Restore.hx", lineNumber : 134, className : "Job_Restore", methodName : "start"});
+			js_node_Fs.unlinkSync(js_node_Path.join(_g.par.tempDir,"crushdata.json"));
+			var _g1 = 0;
+			var _g2 = _g.par.cd.tracks;
+			while(_g1 < _g2.length) {
+				var i = _g2[_g1];
+				++_g1;
+				try {
+					js_node_Fs.unlinkSync(js_node_Path.join(_g.par.tempDir,i.filename));
+				} catch( e1 ) {
+					if (e1 instanceof js__$Boot_HaxeError) e1 = e1.val;
+				}
+			}
+			js_node_Fs.rmdirSync(_g.par.tempDir);
+			t3._complete();
 		}));
 		djNode_task_Job.prototype.start.call(this);
 	}
@@ -830,7 +842,7 @@ Main.__super__ = djNode_BaseApp;
 Main.prototype = $extend(djNode_BaseApp.prototype,{
 	init: function() {
 		this.info_program_name = "CD Crush";
-		this.info_program_version = "1.0";
+		this.info_program_version = "1.1";
 		this.info_program_desc = "Dramatically reduce the filesize of CD image games";
 		this.info_author = "JohnDimi, twitter@jondmt";
 		this.require_input_rule = "yes";
@@ -894,7 +906,7 @@ Main.prototype = $extend(djNode_BaseApp.prototype,{
 			var s1 = djNode_tools_StrTool.bytesToMBStr(inf.sizeAfter) + "MB";
 			if(CDC.batch_mode == "restore") {
 				this.info.deletePrevLine();
-				this.info.printPair("Created",inf.cuePath + " + .bin");
+				this.info.printPair("Created",inf.cuePath + " + .bins");
 				this.info.printPair("Crushed size",s0);
 				this.info.printPair("Restored Image size",s1);
 			} else {
@@ -1040,6 +1052,7 @@ Task_$CheckFFMPEG.prototype = $extend(djNode_task_Task.prototype,{
 	,__class__: Task_$CheckFFMPEG
 });
 var Task_$CompressTrack = function(tr) {
+	this.multiTrack = false;
 	this.flag_delete_old = true;
 	this.name = "Compressing track " + tr.trackNo;
 	djNode_task_Task.call(this);
@@ -1051,34 +1064,36 @@ Task_$CompressTrack.__super__ = djNode_task_Task;
 Task_$CompressTrack.prototype = $extend(djNode_task_Task.prototype,{
 	run: function() {
 		djNode_task_Task.prototype.run.call(this);
-		this.trackFullPath = js_node_Path.join(this.shared.tempDir,this.track.getFilenameRaw());
+		this.multiTrack = this.shared.cd.isMultiImage;
+		this.track.filename = this.track.getTrackName();
+		if(this.track.isData) this.track.filename += ".bin.ecm"; else if(CDC.batch_quality < 4) this.track.filename += ".ogg"; else this.track.filename += ".flac";
+		if(this.multiTrack) this.trackRawPath = js_node_Path.join(this.shared.inputDir,this.track.diskFile); else this.trackRawPath = js_node_Path.join(this.shared.tempDir,this.track.getFilenameRaw());
+		djNode_tools_LOG.log("Compressing track " + this.trackRawPath + " to " + this.track.filename,null,{ fileName : "Task_CompressTrack.hx", lineNumber : 72, className : "Task_CompressTrack", methodName : "run"});
+		this.trackGenPath = js_node_Path.join(this.shared.tempDir,this.track.filename);
 		if(!this.track.isData) {
 			var ffmpeg = new djNode_app_FFmpegAudio();
 			this.addListeners(ffmpeg);
-			ffmpeg.compressPCM(this.trackFullPath,CDC.batch_quality);
+			ffmpeg.compressPCM(this.trackRawPath,CDC.batch_quality,this.trackGenPath);
 		} else {
 			var ecm = new djNode_app_EcmTools();
 			this.addListeners(ecm);
-			ecm.ecm(this.trackFullPath);
+			ecm.ecm(this.trackRawPath,this.trackGenPath);
 		}
 	}
 	,postCompress: function() {
-		if(this.flag_delete_old) try {
-			djNode_tools_LOG.log("Deleting " + this.trackFullPath,null,{ fileName : "Task_CompressTrack.hx", lineNumber : 66, className : "Task_CompressTrack", methodName : "postCompress"});
-			js_node_Fs.unlinkSync(this.trackFullPath);
+		if(this.flag_delete_old && !this.multiTrack) try {
+			djNode_tools_LOG.log("Deleting " + this.trackRawPath,null,{ fileName : "Task_CompressTrack.hx", lineNumber : 98, className : "Task_CompressTrack", methodName : "postCompress"});
+			js_node_Fs.unlinkSync(this.trackRawPath);
 		} catch( e ) {
 			if (e instanceof js__$Boot_HaxeError) e = e.val;
-			djNode_tools_LOG.log("Unable to delete.",2,{ fileName : "Task_CompressTrack.hx", lineNumber : 69, className : "Task_CompressTrack", methodName : "postCompress"});
+			djNode_tools_LOG.log("Unable to delete.",2,{ fileName : "Task_CompressTrack.hx", lineNumber : 101, className : "Task_CompressTrack", methodName : "postCompress"});
 		}
-		this.track.filename = this.track.getTrackName();
-		if(this.track.isData) this.track.filename += ".bin.ecm"; else if(CDC.batch_quality < 4) this.track.filename += ".ogg"; else this.track.filename += ".flac";
-		djNode_tools_LOG.log("Set new track filename to " + this.track.filename,null,{ fileName : "Task_CompressTrack.hx", lineNumber : 86, className : "Task_CompressTrack", methodName : "postCompress"});
 		this.complete();
 	}
 	,addListeners: function(proc) {
 		var _g = this;
 		proc.events.once("close",function(st) {
-			if(st) _g.postCompress(); else _g.fail("Can't compress \"" + _g.trackFullPath + "\", Check write access or free space!","IO");
+			if(st) _g.postCompress(); else _g.fail("Can't compress \"" + _g.trackRawPath + "\", Check write access or free space!","IO");
 		});
 		proc.events.on("progress",function(p) {
 			_g.progress_percent = p;
@@ -1101,6 +1116,11 @@ Task_$CutTracks.prototype = $extend(djNode_task_Task.prototype,{
 		this.progress_type = "steps";
 		this.progress_steps_total = this.par.cd.tracks_total;
 		djNode_task_Task.prototype.run.call(this);
+		if(this.par.cd.isMultiImage) {
+			djNode_tools_LOG.log("Skipping CUT, as the image is already cut",null,{ fileName : "Task_CutTracks.hx", lineNumber : 45, className : "Task_CutTracks", methodName : "run"});
+			this.complete();
+			return;
+		}
 		this.arexec = new djNode_tools_ArrayExecSync(this.par.cd.tracks);
 		this.arexec.queue_action = function(tr) {
 			var cutter = new djNode_file_FileCutter();
@@ -1112,9 +1132,9 @@ Task_$CutTracks.prototype = $extend(djNode_task_Task.prototype,{
 			_g.onStatus("progress",_g);
 		};
 		this.arexec.queue_complete = function() {
-			djNode_tools_LOG.log("Cutting Complete",null,{ fileName : "Task_CutTracks.hx", lineNumber : 61, className : "Task_CutTracks", methodName : "run"});
+			djNode_tools_LOG.log("Cutting Complete",null,{ fileName : "Task_CutTracks.hx", lineNumber : 68, className : "Task_CutTracks", methodName : "run"});
 			if(_g.flag_delete_source) {
-				djNode_tools_LOG.log("Deleting image file \"" + _g.par.imagePath + "\"",null,{ fileName : "Task_CutTracks.hx", lineNumber : 64, className : "Task_CutTracks", methodName : "run"});
+				djNode_tools_LOG.log("Deleting image file \"" + _g.par.imagePath + "\"",null,{ fileName : "Task_CutTracks.hx", lineNumber : 71, className : "Task_CutTracks", methodName : "run"});
 				js_node_Fs.unlinkSync(_g.par.imagePath);
 			}
 			_g.complete();
@@ -1138,13 +1158,18 @@ Task_$JoinTracks.prototype = $extend(djNode_task_Task.prototype,{
 		this.progress_steps_total = this.par.cd.tracks_total;
 		djNode_task_Task.prototype.run.call(this);
 		djNode_tools_LOG.log("Joining tracks to an image. Total tracks " + this.par.cd.tracks_total,null,{ fileName : "Task_JoinTracks.hx", lineNumber : 31, className : "Task_JoinTracks", methodName : "run"});
+		if(this.par.cd.isMultiImage) {
+			djNode_tools_LOG.log("- NO need to JOIN, Track is multitrack",null,{ fileName : "Task_JoinTracks.hx", lineNumber : 34, className : "Task_JoinTracks", methodName : "run"});
+			this.complete();
+			return;
+		}
 		this.joiner = new djNode_file_FileJoiner();
 		this.joiner.events.once("close",function(st) {
 			if(st) {
-				djNode_tools_LOG.log("Join Complete",null,{ fileName : "Task_JoinTracks.hx", lineNumber : 37, className : "Task_JoinTracks", methodName : "run"});
+				djNode_tools_LOG.log("Join Complete",null,{ fileName : "Task_JoinTracks.hx", lineNumber : 43, className : "Task_JoinTracks", methodName : "run"});
 				_g.complete();
 			} else {
-				djNode_tools_LOG.log("Join ERROR - " + _g.joiner.error_log,null,{ fileName : "Task_JoinTracks.hx", lineNumber : 41, className : "Task_JoinTracks", methodName : "run"});
+				djNode_tools_LOG.log("Join ERROR - " + _g.joiner.error_log,null,{ fileName : "Task_JoinTracks.hx", lineNumber : 47, className : "Task_JoinTracks", methodName : "run"});
 				_g.fail(_g.joiner.error_log);
 			}
 		});
@@ -1163,6 +1188,38 @@ Task_$JoinTracks.prototype = $extend(djNode_task_Task.prototype,{
 		this.joiner.join(this.par.imagePath,filesToJoin);
 	}
 	,__class__: Task_$JoinTracks
+});
+var Task_$MoveFiles = function() {
+	djNode_task_Task.call(this);
+};
+Task_$MoveFiles.__name__ = ["Task_MoveFiles"];
+Task_$MoveFiles.__super__ = djNode_task_Task;
+Task_$MoveFiles.prototype = $extend(djNode_task_Task.prototype,{
+	run: function() {
+		var _g = this;
+		this.name = "Moving";
+		this.par = this.shared;
+		this.progress_type = "steps";
+		this.progress_steps_total = this.par.cd.tracks_total;
+		djNode_task_Task.prototype.run.call(this);
+		this.arexec = new djNode_tools_ArrayExecSync(this.par.cd.tracks);
+		this.arexec.queue_action = function(tr) {
+			var sourcePath = js_node_Path.join(_g.par.tempDir,tr.filename);
+			var destPath = js_node_Path.join(CDC.batch_outputDir,tr.diskFile);
+			djNode_tools_FileTool.moveFile(sourcePath,destPath,function() {
+				djNode_tools_LOG.log(" Moved file " + sourcePath + " to " + destPath,null,{ fileName : "Task_MoveFiles.hx", lineNumber : 41, className : "Task_MoveFiles", methodName : "run"});
+				_g.arexec.next();
+			});
+			_g.progress_steps_current = tr.trackNo;
+			_g.onStatus("progress",_g);
+		};
+		this.arexec.queue_complete = function() {
+			djNode_tools_LOG.log("Move Complete",null,{ fileName : "Task_MoveFiles.hx", lineNumber : 50, className : "Task_MoveFiles", methodName : "run"});
+			_g.complete();
+		};
+		this.arexec.start();
+	}
+	,__class__: Task_$MoveFiles
 });
 var Task_$RestoreTrack = function(tr) {
 	this.flag_delete_old = true;
@@ -1190,24 +1247,24 @@ Task_$RestoreTrack.prototype = $extend(djNode_task_Task.prototype,{
 	}
 	,postRestore: function() {
 		if(this.flag_delete_old) try {
-			djNode_tools_LOG.log("Deleting " + this.trackFullPath,null,{ fileName : "Task_RestoreTrack.hx", lineNumber : 74, className : "Task_RestoreTrack", methodName : "postRestore"});
+			djNode_tools_LOG.log("Deleting " + this.trackFullPath,null,{ fileName : "Task_RestoreTrack.hx", lineNumber : 73, className : "Task_RestoreTrack", methodName : "postRestore"});
 			js_node_Fs.unlinkSync(this.trackFullPath);
 		} catch( e ) {
 			if (e instanceof js__$Boot_HaxeError) e = e.val;
-			djNode_tools_LOG.log("Unable to delete.",2,{ fileName : "Task_RestoreTrack.hx", lineNumber : 77, className : "Task_RestoreTrack", methodName : "postRestore"});
+			djNode_tools_LOG.log("Unable to delete.",2,{ fileName : "Task_RestoreTrack.hx", lineNumber : 76, className : "Task_RestoreTrack", methodName : "postRestore"});
 		}
 		this.track.filename = this.track.getFilenameRaw();
-		djNode_tools_LOG.log("Altering new track filename to \"" + this.track.filename + "\"",null,{ fileName : "Task_RestoreTrack.hx", lineNumber : 83, className : "Task_RestoreTrack", methodName : "postRestore"});
+		djNode_tools_LOG.log("Altering new track filename to \"" + this.track.filename + "\"",null,{ fileName : "Task_RestoreTrack.hx", lineNumber : 81, className : "Task_RestoreTrack", methodName : "postRestore"});
 		this.trackFullPath = js_node_Path.join(this.shared.tempDir,this.track.filename);
 		if(!this.track.isData) {
 			var targetSize = this.track.sectorSize * this.shared.cd.SECTORSIZE | 0;
 			var trackSize;
-			djNode_tools_LOG.log("Fixing size :: ",null,{ fileName : "Task_RestoreTrack.hx", lineNumber : 97, className : "Task_RestoreTrack", methodName : "postRestore"});
+			djNode_tools_LOG.log("Fixing size :: ",null,{ fileName : "Task_RestoreTrack.hx", lineNumber : 95, className : "Task_RestoreTrack", methodName : "postRestore"});
 			trackSize = Std["int"](js_node_Fs.statSync(this.trackFullPath).size);
-			djNode_tools_LOG.log("  pre size = " + trackSize,null,{ fileName : "Task_RestoreTrack.hx", lineNumber : 99, className : "Task_RestoreTrack", methodName : "postRestore"});
+			djNode_tools_LOG.log("  pre size = " + trackSize,null,{ fileName : "Task_RestoreTrack.hx", lineNumber : 97, className : "Task_RestoreTrack", methodName : "postRestore"});
 			js_node_Fs.truncateSync(this.trackFullPath,targetSize);
 			trackSize = Std["int"](js_node_Fs.statSync(this.trackFullPath).size);
-			djNode_tools_LOG.log("  post size = " + trackSize,null,{ fileName : "Task_RestoreTrack.hx", lineNumber : 102, className : "Task_RestoreTrack", methodName : "postRestore"});
+			djNode_tools_LOG.log("  post size = " + trackSize,null,{ fileName : "Task_RestoreTrack.hx", lineNumber : 100, className : "Task_RestoreTrack", methodName : "postRestore"});
 			if(trackSize != targetSize) {
 				this.fail("Size mismatch! Size is not what is should be","IO");
 				return;
@@ -1951,14 +2008,12 @@ var djNode_app_EcmTools = function() {
 djNode_app_EcmTools.__name__ = ["djNode","app","EcmTools"];
 djNode_app_EcmTools.__super__ = djNode_app_AppSpawner;
 djNode_app_EcmTools.prototype = $extend(djNode_app_AppSpawner.prototype,{
-	ecm: function(input,outputDir) {
-		if(outputDir != null) djNode_tools_LOG.log("In case I need it",3,{ fileName : "EcmTools.hx", lineNumber : 76, className : "djNode.app.EcmTools", methodName : "ecm"});
-		this.spawnProc(js_node_Path.join(this.dir_exe,this.exe_ecm),[input]);
+	ecm: function(input,output) {
+		if(output != null) this.spawnProc(js_node_Path.join(this.dir_exe,this.exe_ecm),[input,output]); else this.spawnProc(js_node_Path.join(this.dir_exe,this.exe_ecm),[input]);
 		this.listen_progress("encode");
 	}
-	,unecm: function(input,outputDir) {
-		if(outputDir != null) djNode_tools_LOG.log("In case I need it",3,{ fileName : "EcmTools.hx", lineNumber : 87, className : "djNode.app.EcmTools", methodName : "unecm"});
-		this.spawnProc(js_node_Path.join(this.dir_exe,this.exe_unecm),[input]);
+	,unecm: function(input,output) {
+		if(output != null) this.spawnProc(js_node_Path.join(this.dir_exe,this.exe_unecm),[input,output]); else this.spawnProc(js_node_Path.join(this.dir_exe,this.exe_unecm),[input]);
 		this.listen_progress("decode");
 	}
 	,listen_progress: function(oper) {
@@ -2532,23 +2587,25 @@ djNode_tools_CDInfo.prototype = {
 		}
 	}
 	,load: function(input) {
-		djNode_tools_LOG.log("CDInfo, loading " + input,null,{ fileName : "CDInfo.hx", lineNumber : 106, className : "djNode.tools.CDInfo", methodName : "load"});
+		djNode_tools_LOG.log("CDInfo, loading " + input,null,{ fileName : "CDInfo.hx", lineNumber : 119, className : "djNode.tools.CDInfo", methodName : "load"});
 		if(djNode_tools_FileTool.pathExists(input) == false) throw new js__$Boot_HaxeError("Cue file \"" + input + "\" does not exist.");
 		this.loadedFile = input;
 		this.image_path = null;
 		this.image_size = 0;
+		this.total_size = 0;
 		this.tracks = [];
 		this.tracks_total = 0;
 		this.TITLE = "untitled";
 		this.SECTORSIZE = 0;
 		this.TYPE = null;
 		this.openTrack = null;
+		this.openFile = null;
 		this.loadedFile_dir = js_node_Path.dirname(this.loadedFile);
 		var _this = js_node_Path.extname(input).toLowerCase();
 		this.loadedFile_ext = HxOverrides.substr(_this,1,null);
 		var rtitle = new EReg("([^/\\\\]*)\\.(?:ccd|cue)$","i");
 		if(rtitle.match(input)) this.TITLE = rtitle.matched(1);
-		djNode_tools_LOG.log("Guessed cd title = " + this.TITLE,null,{ fileName : "CDInfo.hx", lineNumber : 124, className : "djNode.tools.CDInfo", methodName : "load"});
+		djNode_tools_LOG.log("Guessed cd title = " + this.TITLE,null,{ fileName : "CDInfo.hx", lineNumber : 137, className : "djNode.tools.CDInfo", methodName : "load"});
 		var parser = new djNode_tools_CDParser(input);
 		parser.parseWith((function($this) {
 			var $r;
@@ -2574,40 +2631,65 @@ djNode_tools_CDInfo.prototype = {
 			return $r;
 		}(this)));
 		parser = null;
-		this.postParse_check(this.loadedFile_ext);
+		this.postParse_check();
 	}
-	,postParse_check: function(ext) {
+	,postParse_check: function() {
 		if(this.tracks_total == 0) throw new js__$Boot_HaxeError("No Tracks in the cue file");
 		this._getCDTypeFromTracks();
-		djNode_tools_LOG.log("CD Type = " + this.TYPE,null,{ fileName : "CDInfo.hx", lineNumber : 152, className : "djNode.tools.CDInfo", methodName : "postParse_check"});
-		djNode_tools_LOG.log("Number of tracks = " + this.tracks.length,null,{ fileName : "CDInfo.hx", lineNumber : 153, className : "djNode.tools.CDInfo", methodName : "postParse_check"});
-		djNode_tools_LOG.log("Image file = " + this.image_path,null,{ fileName : "CDInfo.hx", lineNumber : 154, className : "djNode.tools.CDInfo", methodName : "postParse_check"});
-		switch(ext) {
-		case "cue":
-			if(this.image_path == null) throw new js__$Boot_HaxeError("Image file is not set");
-			if(!djNode_tools_FileTool.pathExists(this.image_path)) {
-				this.image_path = js_node_Path.join(this.loadedFile_dir,this.image_path);
-				if(djNode_tools_FileTool.pathExists(this.image_path) == false) throw new js__$Boot_HaxeError("Image file does not exist - " + this.image_path);
-			}
-			break;
-		case "ccd":
+		djNode_tools_LOG.log("CD Type = " + this.TYPE,null,{ fileName : "CDInfo.hx", lineNumber : 165, className : "djNode.tools.CDInfo", methodName : "postParse_check"});
+		djNode_tools_LOG.log("Number of tracks = " + this.tracks.length,null,{ fileName : "CDInfo.hx", lineNumber : 166, className : "djNode.tools.CDInfo", methodName : "postParse_check"});
+		if(this.loadedFile_ext == "ccd") {
 			var tryToFind = [".bin",".img"];
 			var _g = 0;
 			while(_g < tryToFind.length) {
 				var i = tryToFind[_g];
 				++_g;
 				if(djNode_tools_FileTool.pathExists(js_node_Path.join(this.loadedFile_dir,this.TITLE + i))) {
-					this.image_path = js_node_Path.join(this.loadedFile_dir,this.TITLE + i);
+					this.tracks[0].diskFile = this.TITLE + i;
 					break;
 				}
 			}
-			if(this.image_path == null) throw new js__$Boot_HaxeError("Can't find image");
-			break;
+			if(this.tracks[0].diskFile == null) throw new js__$Boot_HaxeError("CloneCD sheet, Can't find image.");
 		}
-		if(new EReg("(\\.bin|\\.img|\\.iso)$","i").match(this.image_path) == false) throw new js__$Boot_HaxeError("Image Filename is not a .bin/.img/.iso");
-		var imageStats = js_node_Fs.statSync(this.image_path);
-		var imageSectorSize = Math.ceil(imageStats.size / this.SECTORSIZE);
-		this.image_size = imageStats.size | 0;
+		var cc = 0;
+		var _g1 = 0;
+		var _g11 = this.tracks;
+		while(_g1 < _g11.length) {
+			var i1 = _g11[_g1];
+			++_g1;
+			if(i1.diskFile == null) continue;
+			cc++;
+			var check = js_node_Path.join(this.loadedFile_dir,i1.diskFile);
+			if(djNode_tools_FileTool.pathExists(check) == false) throw new js__$Boot_HaxeError("Track image file does not exist - " + check);
+			var imageStats = js_node_Fs.statSync(check);
+			i1.sectorSize = Math.ceil(imageStats.size / this.SECTORSIZE);
+			i1.diskFileSize = imageStats.size | 0;
+			if(i1.sectorSize <= 0) throw new js__$Boot_HaxeError("File Error, invalid filesize , " + check);
+			this.total_size += i1.diskFileSize;
+		}
+		if(cc == this.tracks.length) {
+			this.isMultiImage = true;
+			djNode_tools_LOG.log(" Cue Sheet is MULTI FILE ",null,{ fileName : "CDInfo.hx", lineNumber : 221, className : "djNode.tools.CDInfo", methodName : "postParse_check"});
+			this.postParse_Multi();
+		} else if(cc == 1) {
+			this.isMultiImage = false;
+			djNode_tools_LOG.log(" Cue Sheet is SINGLE FILE ",null,{ fileName : "CDInfo.hx", lineNumber : 226, className : "djNode.tools.CDInfo", methodName : "postParse_check"});
+			this.postParse_Single();
+		} else if(cc == 0) throw new js__$Boot_HaxeError("There are no FILES declared in the cuesheet."); else throw new js__$Boot_HaxeError("CDCRUSH doesn't support multi file cue sheets with multi tracks per file.");
+		this.image_path = js_node_Path.join(this.loadedFile_dir,this.tracks[0].diskFile);
+		var _g2 = 0;
+		var _g12 = this.tracks;
+		while(_g2 < _g12.length) {
+			var i2 = _g12[_g2];
+			++_g2;
+			i2.debugInfo();
+		}
+	}
+	,postParse_Multi: function() {
+	}
+	,postParse_Single: function() {
+		if(this.tracks[0].diskFile == null) throw new js__$Boot_HaxeError("The first track doesn't have a file image");
+		var imageSectorSize = this.tracks[0].sectorSize;
 		var c = this.tracks_total - 1;
 		this.tracks[c].calculateStart();
 		this.tracks[c].sectorSize = imageSectorSize - this.tracks[c].sectorStart;
@@ -2620,6 +2702,7 @@ djNode_tools_CDInfo.prototype = {
 		if(new EReg("^REM","i").match(line)) return;
 		if(new EReg("^FILE","i").match(line)) {
 			this.image_path = new EReg("[\"']+","g").split(line)[1];
+			this.openFile = new EReg("[\"']+","g").split(line)[1];
 			return;
 		}
 		var regTrack = new EReg("^\\s*TRACK\\s+(\\d+)\\s+(\\S+)","i");
@@ -2631,8 +2714,10 @@ djNode_tools_CDInfo.prototype = {
 				++_g;
 				if(i.trackNo == Std.parseInt(regTrack.matched(1))) throw new js__$Boot_HaxeError("Parse Error, Track-" + i.trackNo + " is already defined");
 			}
-			var track = new djNode_tools_CueTrack(regTrack.matched(1),regTrack.matched(2));
-			this.tracks.push(track);
+			var tr = new djNode_tools_CueTrack(regTrack.matched(1),regTrack.matched(2));
+			tr.diskFile = this.openFile;
+			this.openFile = null;
+			this.tracks.push(tr);
 			this.tracks_total++;
 			this.openTrack = this.tracks[this.tracks_total - 1];
 			return;
@@ -2658,7 +2743,7 @@ djNode_tools_CDInfo.prototype = {
 			var tr = new djNode_tools_CueTrack(regGetTrackNo.matched(1));
 			this.tracks.push(tr);
 			this.openTrack = tr;
-			djNode_tools_LOG.log("discovered Track - " + Std.string(tr),null,{ fileName : "CDInfo.hx", lineNumber : 272, className : "djNode.tools.CDInfo", methodName : "parser_ccd"});
+			djNode_tools_LOG.log("discovered Track - " + Std.string(tr),null,{ fileName : "CDInfo.hx", lineNumber : 356, className : "djNode.tools.CDInfo", methodName : "parser_ccd"});
 			this.tracks_total++;
 			return;
 		}
@@ -2670,11 +2755,11 @@ djNode_tools_CDInfo.prototype = {
 			case "0":
 				this.openTrack.type = "AUDIO";
 				this.openTrack.isData = false;
-				djNode_tools_LOG.log("AUDIO - ",null,{ fileName : "CDInfo.hx", lineNumber : 281, className : "djNode.tools.CDInfo", methodName : "parser_ccd"});
+				djNode_tools_LOG.log("AUDIO - ",null,{ fileName : "CDInfo.hx", lineNumber : 365, className : "djNode.tools.CDInfo", methodName : "parser_ccd"});
 				break;
 			case "2":
 				this.openTrack.type = "MODE2/2352";
-				djNode_tools_LOG.log("discovered Track - MODE2/2352",null,{ fileName : "CDInfo.hx", lineNumber : 282, className : "djNode.tools.CDInfo", methodName : "parser_ccd"});
+				djNode_tools_LOG.log("discovered Track - MODE2/2352",null,{ fileName : "CDInfo.hx", lineNumber : 366, className : "djNode.tools.CDInfo", methodName : "parser_ccd"});
 				break;
 			}
 			return;
@@ -2688,34 +2773,28 @@ djNode_tools_CDInfo.prototype = {
 			return;
 		}
 	}
-	,saveAs_Cue: function(output,multiFileCue,comment) {
+	,saveAs_Cue: function(output,comment) {
 		var data = "";
 		var i = 0;
 		var tr;
-		if(multiFileCue == null) multiFileCue = false;
 		if(this.tracks_total == 0) throw new js__$Boot_HaxeError("No Tracks to write");
 		if(this.TITLE == null) {
-			djNode_tools_LOG.log("Title is null, autoset to 'untitled'",2,{ fileName : "CDInfo.hx", lineNumber : 316, className : "djNode.tools.CDInfo", methodName : "saveAs_Cue"});
+			djNode_tools_LOG.log("Title is null, autoset to 'untitled'",2,{ fileName : "CDInfo.hx", lineNumber : 398, className : "djNode.tools.CDInfo", methodName : "saveAs_Cue"});
 			this.TITLE = "untitled";
 		}
-		this.imageFilename = this.TITLE + ".bin";
 		while(i < this.tracks_total) {
 			tr = this.tracks[i];
-			if(multiFileCue == false) {
-				if(i == 0) data += "FILE \"" + this.imageFilename + "\" BINARY\n";
-			} else data += "FILE \"" + tr.filename + "\" " + djNode_tools_FileTool.getFileExt(tr.filename).toUpperCase() + "\n";
+			if(tr.diskFile != null) data += "FILE \"" + tr.diskFile + "\" BINARY\n";
 			data += "\tTRACK " + tr.getTrackNoSTR() + (" " + tr.type + "\n");
 			if(this.tracks[i].hasPregap()) data += "\t\tPREGAP " + this.tracks[i].getPregapString() + "\n";
-			if(multiFileCue) data += "\t\tINDEX 01 00:00:00\n"; else {
-				var t = 0;
-				while(t < this.tracks[i].indexTotal) {
-					var ind = this.tracks[i].indexAr[t];
-					data += "\t\tINDEX ";
-					if(ind.no < 10) data += "0";
-					data += ind.no + " ";
-					data += this.tracks[i].getIndexTimeString(t) + "\n";
-					t++;
-				}
+			var t = 0;
+			while(t < this.tracks[i].indexTotal) {
+				var ind = this.tracks[i].indexAr[t];
+				data += "\t\tINDEX ";
+				if(ind.no < 10) data += "0";
+				data += ind.no + " ";
+				data += this.tracks[i].getIndexTimeString(t) + "\n";
+				t++;
 			}
 			i++;
 		}
@@ -2727,7 +2806,7 @@ djNode_tools_CDInfo.prototype = {
 		this.tracks_total = 0;
 		var rtitle = new EReg("([^/\\\\]*)\\.(?:bin|iso|img)$","i");
 		if(rtitle.match(filename)) this.TITLE = rtitle.matched(1);
-		djNode_tools_LOG.log("createFromImage() - Guessed cd title = " + this.TITLE,null,{ fileName : "CDInfo.hx", lineNumber : 379, className : "djNode.tools.CDInfo", methodName : "createFromImage"});
+		djNode_tools_LOG.log("createFromImage() - Guessed cd title = " + this.TITLE,null,{ fileName : "CDInfo.hx", lineNumber : 448, className : "djNode.tools.CDInfo", methodName : "createFromImage"});
 		this.image_path = filename;
 		var imext = djNode_tools_FileTool.getFileExt(this.image_path);
 		if(HxOverrides.indexOf(["bin","img","iso"],imext,0) < 0) throw new js__$Boot_HaxeError("createFromImage, unsupported Image Extension");
@@ -2751,12 +2830,12 @@ djNode_tools_CDInfo.prototype = {
 			++_g;
 			if(i.filename == null) throw new js__$Boot_HaxeError("Track " + i.trackNo + " should have a filename set");
 		}
-		var o = { cdTitle : this.TITLE, sectorSize : this.SECTORSIZE, imageSize : this.image_size, tracks : this.tracks};
+		var o = { cdTitle : this.TITLE, sectorSize : this.SECTORSIZE, imageSize : this.total_size, tracks : this.tracks};
 		js_node_Fs.writeFileSync(filename,JSON.stringify(o,null,"\t"),"utf8");
 	}
 	,loadSettingsFile: function(filename) {
 		if(djNode_tools_FileTool.pathExists(filename) == false) throw new js__$Boot_HaxeError("CDInfo file \"" + filename + "\" does not exist");
-		djNode_tools_LOG.log("CDInfo restoring data - " + filename,null,{ fileName : "CDInfo.hx", lineNumber : 435, className : "djNode.tools.CDInfo", methodName : "loadSettingsFile"});
+		djNode_tools_LOG.log("CDInfo restoring data - " + filename,null,{ fileName : "CDInfo.hx", lineNumber : 502, className : "djNode.tools.CDInfo", methodName : "loadSettingsFile"});
 		var obj = JSON.parse(js_node_Fs.readFileSync(filename,{ encoding : "utf8"}));
 		this.tracks = [];
 		this.tracks_total = Reflect.fields(obj.tracks).length;
@@ -2771,22 +2850,27 @@ djNode_tools_CDInfo.prototype = {
 				Reflect.setField(tr,a,Reflect.getProperty(obj.tracks[i],a));
 			}
 			this.tracks.push(tr);
+			tr.debugInfo();
 			i++;
 		}
+		var cc = 0;
 		var _g2 = 0;
 		var _g11 = this.tracks;
 		while(_g2 < _g11.length) {
 			var i1 = _g11[_g2];
 			++_g2;
-			if(i1.type != "AUDIO") i1.isData = true; else i1.isData = false;
+			if(i1.diskFile != null) cc++;
 		}
+		this.isMultiImage = cc > 1;
 		this.TITLE = obj.cdTitle;
-		this.imageFilename = this.TITLE + ".bin";
-		this.image_size = obj.imageSize;
+		this.total_size = obj.imageSize;
 		this._getCDTypeFromTracks();
-		djNode_tools_LOG.log("Title = " + this.TITLE,null,{ fileName : "CDInfo.hx", lineNumber : 463, className : "djNode.tools.CDInfo", methodName : "loadSettingsFile"});
-		djNode_tools_LOG.log("Tracks Total = " + Std.string(this.tracks_total),null,{ fileName : "CDInfo.hx", lineNumber : 464, className : "djNode.tools.CDInfo", methodName : "loadSettingsFile"});
-		djNode_tools_LOG.log("SectorSize = " + Std.string(this.SECTORSIZE),null,{ fileName : "CDInfo.hx", lineNumber : 465, className : "djNode.tools.CDInfo", methodName : "loadSettingsFile"});
+		if(!this.isMultiImage) {
+			if(this.tracks[0].diskFile == null) this.tracks[0].diskFile = this.TITLE + ".bin";
+		}
+		djNode_tools_LOG.log("Title = " + this.TITLE,null,{ fileName : "CDInfo.hx", lineNumber : 552, className : "djNode.tools.CDInfo", methodName : "loadSettingsFile"});
+		djNode_tools_LOG.log("Tracks Total = " + Std.string(this.tracks_total),null,{ fileName : "CDInfo.hx", lineNumber : 553, className : "djNode.tools.CDInfo", methodName : "loadSettingsFile"});
+		djNode_tools_LOG.log("SectorSize = " + Std.string(this.SECTORSIZE),null,{ fileName : "CDInfo.hx", lineNumber : 554, className : "djNode.tools.CDInfo", methodName : "loadSettingsFile"});
 	}
 	,_getCDTypeFromTracks: function() {
 		this.TYPE = null;
@@ -2838,7 +2922,9 @@ djNode_tools_CueIndex.prototype = {
 	__class__: djNode_tools_CueIndex
 };
 var djNode_tools_CueTrack = function(trackNo,type) {
-	this.filename = "";
+	this.diskFileSize = 0;
+	this.diskFile = null;
+	this.filename = null;
 	this.pregapMillisecs = 0;
 	this.pregapSeconds = 0;
 	this.pregapMinutes = 0;
@@ -2917,6 +3003,10 @@ djNode_tools_CueTrack.prototype = {
 			i++;
 		}
 		return HxOverrides.substr(o,0,-1);
+	}
+	,debugInfo: function() {
+		djNode_tools_LOG.log("-Track:" + this.trackNo + " | diskFile:" + this.diskFile + " | diskFileSize:" + this.diskFileSize + " | ",null,{ fileName : "CDInfo.hx", lineNumber : 729, className : "djNode.tools.CueTrack", methodName : "debugInfo"});
+		djNode_tools_LOG.log("- indexTot:" + this.indexTotal + " | sector:" + this.sectorSize + " | sectorStart:" + this.sectorStart + " | isData:" + Std.string(this.isData),null,{ fileName : "CDInfo.hx", lineNumber : 730, className : "djNode.tools.CueTrack", methodName : "debugInfo"});
 	}
 	,__class__: djNode_tools_CueTrack
 };
@@ -3793,7 +3883,7 @@ var DataView = $global.DataView || js_html_compat_DataView;
 var Uint8Array = $global.Uint8Array || js_html_compat_Uint8Array._new;
 CDC.AUTHORNAME = "JohnDimi, twitter@jondmt";
 CDC.PROGRAM_NAME = "CD Crush";
-CDC.PROGRAM_VERSION = "1.0";
+CDC.PROGRAM_VERSION = "1.1";
 CDC.PROGRAM_SHORT_DESC = "Dramatically reduce the filesize of CD image games";
 CDC.CDCRUSH_SETTINGS = "crushdata.json";
 CDC.CDCRUSH_EXTENSION = "arc";

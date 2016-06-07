@@ -6,6 +6,7 @@ import djNode.task.Job;
 import CDC;
 import djNode.task.Task;
 import djNode.task.Task.Qtask;
+import djNode.term.UserAsk;
 import djNode.tools.CDInfo;
 import djNode.tools.FileTool;
 import djNode.tools.LOG;
@@ -59,25 +60,27 @@ class Job_Crush extends Job
 				return;
 			}
 			
-			par.sizeBefore = par.cd.image_size;
-			par.cuePath = par.input;
-			par.imagePath = par.cd.image_path;
+			par.sizeBefore = par.cd.total_size;
 			LOG.log('Loaded ${par.input}');
 			LOG.log('Image Path = ${par.cd.image_path}');
 			LOG.log('Image Size = ${par.sizeBefore}');
-			t._complete();			
+			
+			par.output = Path.join(CDC.batch_outputDir, par.cd.TITLE + "." + CDC.CDCRUSH_EXTENSION);
+			LOG.log('Setting output file to ${par.output}');
+			
+			// Try to see if the output file already exists
+			if (FileTool.pathExists(par.output)) {
+				throw '${par.output} already exists. Delete this manually'; /// <-.-- Force with flag
+			}
+			t._complete();
 		}));
+		
 		
 		// -- Cut the image file
 		add(new Task_CutTracks());
 		
 		// -- Compress the tracks
 		add(new Qtask("-postCut", function(t:Qtask) {
-			
-			// Set generated files info now, They don't exist yet
-			par.imagePath = Path.join(CDC.batch_outputDir, par.cd.TITLE + ".bin");
-			par.cuePath = Path.join(CDC.batch_outputDir, par.cd.TITLE + ".cue");
-			
 			// Add as many tasks as there are tracks.
 			var c = par.cd.tracks_total;
 			while (--c >= 0) {
@@ -89,6 +92,7 @@ class Job_Crush extends Job
 		// -- Create and Save the CDCRUSH SETTINGS file
 		add(new Qtask('-saveSettings', function(t:Qtask) {
 			par.cd.self_save(Path.join(par.tempDir, CDC.CDCRUSH_SETTINGS));
+			par.cd.self_save(Path.join(par.inputDir, CDC.CDCRUSH_SETTINGS)); /// DEBUG <-------------
 			t._complete();
 		}));
 	
@@ -111,8 +115,6 @@ class Job_Crush extends Job
 				t.onStatus("progress", t);
 			});
 			
-			par.output = Path.join(CDC.batch_outputDir, par.cd.TITLE + "." + CDC.CDCRUSH_EXTENSION);
-			LOG.log('Setting output file to ${par.output}');
 			
 			listOfFilesToCompress = [];
 			listOfFilesToCompress = [Path.join(par.tempDir, CDC.CDCRUSH_SETTINGS)];

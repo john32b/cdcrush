@@ -28,7 +28,7 @@ class Task_RestoreTrack extends Task
 	var trackFullPath:String;
 	// If I ever want to keep the old files?
 	var flag_delete_old:Bool = true;
-	
+
 	//---------------------------------------------------;
 	public function new(tr:CueTrack)
 	{
@@ -68,7 +68,6 @@ class Task_RestoreTrack extends Task
 	function postRestore()
 	{
 		// -- 1. Delete the old file
-		
 		if (flag_delete_old)
 		try {
 			LOG.log('Deleting $trackFullPath');
@@ -78,7 +77,6 @@ class Task_RestoreTrack extends Task
 		}
 			
 		// -- 2. Fix the track.filename to point to the new restoredfile
-		
 		track.filename = track.getFilenameRaw();
 		LOG.log('Altering new track filename to "${track.filename}"');
 		trackFullPath = Path.join(shared.tempDir, track.filename); // also fic this

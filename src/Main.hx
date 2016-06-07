@@ -136,7 +136,7 @@ class Main extends BaseApp
 			if (CDC.batch_mode == "restore")
 			{
 				info.deletePrevLine();
-				info.printPair("Created", inf.cuePath + " + .bin");
+				info.printPair("Created", inf.cuePath + " + .bins");
 				info.printPair("Crushed size", s0);
 				info.printPair("Restored Image size", s1);
 			}

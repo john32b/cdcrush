@@ -40,6 +40,13 @@ class Task_CutTracks extends Task
 		progress_steps_total = par.cd.tracks_total;
 		super.run();
 		
+		if (par.cd.isMultiImage)
+		{
+			LOG.log("Skipping CUT, as the image is already cut");
+			complete();
+			return;
+		}
+		
 		arexec = new ArrayExecSync(par.cd.tracks);
 		// --
 		arexec.queue_action = function(tr:CueTrack) {

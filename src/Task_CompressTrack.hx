@@ -20,10 +20,14 @@ class Task_CompressTrack extends Task
 	// The current track being processed
 	var track:CueTrack;
 	// The full path of the trackFile being processed
-	var trackFullPath:String;
+	var trackRawPath:String;
+	// The full path of the new generated track
+	var trackGenPath:String;
+	
 	// If I ever want to keep the old files?
 	var flag_delete_old:Bool = true;
 	
+	var multiTrack:Bool = false;
 	//---------------------------------------------------;
 	public function new(tr:CueTrack)
 	{
@@ -38,41 +42,13 @@ class Task_CompressTrack extends Task
 	override public function run() 
 	{
 		super.run();
+	
+		multiTrack = shared.cd.isMultiImage;
 		
-		trackFullPath = Path.join(shared.tempDir, track.getFilenameRaw());
-
-		if (!track.isData)
-		{
-			// Compress Audio
-			var ffmpeg = new FFmpegAudio();
-			addListeners(ffmpeg);
-			ffmpeg.compressPCM(trackFullPath, CDC.batch_quality);
-
-		}else
-		{	
-			// ECM the BIN file
-			var ecm = new EcmTools();
-			addListeners(ecm);
-			ecm.ecm(trackFullPath);
-		}
-	}//---------------------------------------------------;
-
-	// --
-	function postCompress()
-	{
-		// -- 1. Delete the old file
-		if (flag_delete_old)
-		try {
-			LOG.log('Deleting $trackFullPath');
-			Fs.unlinkSync(trackFullPath);
-		}catch (e:Dynamic) {
-			LOG.log('Unable to delete.', 2);
-		}
-		
-		// -- 2. I need to update the track's filename to point to the new file
+		// Update the final trackName, i need it for later.
 		track.filename = track.getTrackName();
 	
-		if (track.isData) 
+		if (track.isData)  
 		{
 			track.filename += ".bin.ecm";
 		}else
@@ -82,8 +58,48 @@ class Task_CompressTrack extends Task
 			else
 				track.filename += ".flac";
 		}
-			
-		LOG.log('Set new track filename to ${track.filename}');
+		
+		if (multiTrack)
+		{
+			// Multitrack sheets are already cut and have the files already there on the input folder
+			trackRawPath = Path.join(shared.inputDir, track.diskFile);
+		}else
+		{
+			// Single image tracks are cut and are on the temp dir
+			trackRawPath = Path.join(shared.tempDir, track.getFilenameRaw());
+		}
+
+		LOG.log('Compressing track ${trackRawPath} to ${track.filename}');
+
+		// Store the full path of the final track
+		trackGenPath = Path.join(shared.tempDir, track.filename);
+					
+		if (!track.isData)
+		{
+			// Compress Audio
+			var ffmpeg = new FFmpegAudio();
+			addListeners(ffmpeg);
+			ffmpeg.compressPCM(trackRawPath, CDC.batch_quality, trackGenPath);
+
+		}else
+		{	
+			// ECM the BIN file
+			var ecm = new EcmTools();
+			addListeners(ecm);
+			ecm.ecm(trackRawPath, trackGenPath);
+		}
+	}//---------------------------------------------------;
+
+	// --
+	function postCompress()
+	{
+		if (flag_delete_old && !multiTrack)
+		try {
+			LOG.log('Deleting $trackRawPath');
+			Fs.unlinkSync(trackRawPath);
+		}catch (e:Dynamic) {
+			LOG.log('Unable to delete.', 2);
+		}
 		
 		complete();
 	}//---------------------------------------------------;
@@ -97,7 +113,7 @@ class Task_CompressTrack extends Task
 			if (st) {
 				postCompress();
 			}else {
-				fail('Can\'t compress "$trackFullPath", Check write access or free space!', 'IO');
+				fail('Can\'t compress "$trackRawPath", Check write access or free space!', 'IO');
 			}
 		});
 		

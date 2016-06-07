@@ -1,0 +1,43 @@
+
+
+
+CHANGELOG:
+----------
+
+V 1.1 
+	. Will create a folder as an output dir if no output folder is defined.
+	
+	. Supports Cue Sheets with multiple track files. Some cuesheets have the tracks 
+	  already cut into multiple files and no splitting is required.
+	  
+	  		  e.g. CueSheets that look like this are now supported:
+				  
+				FILE "WipEout 3 (USA) (Track 01).bin" BINARY
+					TRACK 01 MODE2/2352
+					INDEX 01 00:00:00
+				FILE "WipEout 3 (USA) (Track 02).bin" BINARY
+					TRACK 02 AUDIO
+					INDEX 00 00:00:00
+					INDEX 01 00:02:00
+				FILE "WipEout 3 (USA) (Track 03).bin" BINARY
+					..
+					..
+					
+V 1.0
+	Mostly re-written. Compiled using the _hxnodejs_ library.
+	Added checks to see if temp and output directories are writable
+	Added a pre-run check to see if FFMPEG is installed
+
+V 0.9.10
+	Fixed CCD imput file bug. Will now process it correctly. ( Keep in mind cdcrush does not support subchannel data )
+
+V 0.9.9
+	Fixed bug where output could not be defined with -o    
+
+V 0.9.8
+	Added support for basic * wildcards.
+	e.g.  
+	`cdcrush c:\iso\*.arc`  
+
+V 0.9.7 
+	Initial release.

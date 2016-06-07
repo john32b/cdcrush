@@ -30,6 +30,12 @@ class Task_JoinTracks extends Task
 		super.run();
 		LOG.log('Joining tracks to an image. Total tracks ${par.cd.tracks_total}');
 		
+		if (par.cd.isMultiImage) {
+			LOG.log("- NO need to JOIN, Track is multitrack");
+			complete();
+			return;
+		}
+		
 		joiner = new FileJoiner();
 		
 		joiner.events.once("close", function(st:Bool) {

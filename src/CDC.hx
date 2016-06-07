@@ -64,7 +64,7 @@ class CDC
 	//--- CDCrush parameters
 	public static inline var AUTHORNAME 		= "JohnDimi, twitter@jondmt";
 	public static inline var PROGRAM_NAME 		= "CD Crush";
-	public static inline var PROGRAM_VERSION 	= "1.0";
+	public static inline var PROGRAM_VERSION 	= "1.1";
 	public static inline var PROGRAM_SHORT_DESC	= "Dramatically reduce the filesize of CD image games";
 	public static inline var CDCRUSH_SETTINGS   = "crushdata.json";
 	public static inline var CDCRUSH_EXTENSION  = "arc";
@@ -109,7 +109,7 @@ class CDC
 	// passthrough , check Job.hx
 	public static var onJobStatus:String->Job->Void; // ! MUST BE SET
 	// User set, push task updates
-	// pass-through, check Task.hx
+	// passthrough, check Task.hx
 	public static var onTaskStatus:String->Task->Void;
 	// All operations complete
 	public static var onComplete:Void->Void;
@@ -140,14 +140,6 @@ class CDC
 		batch_quality = params.quality;
 		batch_outputDir = params.output;
 		simulatedRun = params.sim;
-		
-		LOG.log('-- CDC RUN PARAMETERS --');
-		LOG.log(' mode      = $batch_mode');
-		LOG.log(' quality   = $batch_quality');
-		LOG.log(' outputDir = $batch_outputDir');
-		LOG.log(' tempdir   = $batch_tempdir');
-		LOG.log(' files     = $fileList');
-		LOG.log('-------------------------');
 		
 		queueCurrent = 0;
 		queueTotal = fileList.length;
@@ -236,6 +228,14 @@ class CDC
 			}
 		}
 		
+		// -- Some parameters are sanitized.
+		LOG.log('-- CDC RUN PARAMETERS --');
+		LOG.log(' mode      = $batch_mode');
+		LOG.log(' quality   = $batch_quality');
+		LOG.log(' outputDir = $batch_outputDir');
+		LOG.log(' tempdir   = $batch_tempdir');
+		LOG.log(' files     = $fileList');
+		LOG.log('-------------------------');
 	}//---------------------------------------------------;
 
 	
