@@ -1,12 +1,10 @@
 package;
 
 import djNode.BaseApp;
-import djNode.Graphics;
 import djNode.Terminal;
 import djNode.task.Job;
 import djNode.task.Task;
 import djNode.term.info.ActionInfo;
-import djNode.term.UserAsk;
 import djNode.tools.LOG;
 import djNode.tools.StrTool;
 

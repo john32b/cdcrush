@@ -152,6 +152,7 @@ class Job_Restore extends Job
 
 		add(new Qtask("-loadcdinfo", function(t:Qtask) {
 			
+			// par.imagePath must be set
 			if (par.cd.isMultiImage) {
 				addNext(new Task_MoveFiles());
 			}else {

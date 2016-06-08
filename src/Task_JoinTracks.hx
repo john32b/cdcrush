@@ -3,6 +3,7 @@ package;
 import djNode.file.FileJoiner;
 import djNode.task.Task;
 import djNode.tools.CDInfo.CueTrack;
+import djNode.tools.FileTool;
 import djNode.tools.LOG;
 import js.node.Path;
 
@@ -35,6 +36,18 @@ class Task_JoinTracks extends Task
 			complete();
 			return;
 		}
+
+		
+		// No need to join, just move the file
+		if (par.cd.tracks_total == 1)
+		{
+			FileTool.moveFile( Path.join(par.tempDir, par.cd.tracks[0].filename) ,
+								par.imagePath, function() {
+									complete();
+								});
+			return;
+		}
+		
 		
 		joiner = new FileJoiner();
 		

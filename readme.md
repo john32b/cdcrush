@@ -15,7 +15,7 @@ This is the source code repository.
 ### CHANGELOG
 
 **Version 1.1** : 	
-. BUGFIX, You can now use spaces and symbols at the pathnames. e.g.
+- BUGFIX, You can now use spaces and symbols in the pathnames. e.g.
   `cdcrush "C:/@ @ #$%^ games/isos @#/game.arc"`
 - NEW, run with "-f" to restore ARC files to separate folders.
 - NEW, run with "-w" to overwrite any files during the convertion.

@@ -34,7 +34,7 @@ class Job_Crush extends Job
 		
 		#if debug 
 		if (CDC.simulatedRun) {
-		 addQueue_simulate(); super.start(); return;
+			addQueue_simulate(); super.start(); return;
 		}
 		#end
 		
@@ -82,12 +82,15 @@ class Job_Crush extends Job
 				return;
 			}
 			
+			if (par.cd.isMultiImage == false)
+			{
+				addNext(new Task_CutTracks());
+			}
+			
 			t._complete();
+			
 		}));
 		
-		
-		// -- Cut the image file
-		add(new Task_CutTracks());
 		
 		// -- Compress the tracks
 		add(new Qtask("-postCut", function(t:Qtask) {
@@ -124,13 +127,13 @@ class Job_Crush extends Job
 				t.onStatus("progress", t);
 			});
 			
-			
 			listOfFilesToCompress = [];
 			listOfFilesToCompress = [Path.join(par.tempDir, CDC.CDCRUSH_SETTINGS)];
 			for (i in par.cd.tracks) {
 				listOfFilesToCompress.push(Path.join(par.tempDir, i.filename));
 			}
 			arc.compress(listOfFilesToCompress, par.crushedArc);
+			
 		}));
 		
 		// -- ARC is done, delete files

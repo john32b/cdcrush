@@ -40,13 +40,15 @@ class Task_CutTracks extends Task
 		progress_steps_total = par.cd.tracks_total;
 		super.run();
 		
-		if (par.cd.isMultiImage)
-		{
-			LOG.log("Skipping CUT, as the image is already cut");
+		if (par.cd.isMultiImage) {
+			LOG.log(" - Skipping CUT, as the image is already cut");
 			complete();
 			return;
 		}
 		
+		var imageFile:String = Path.join(par.inputDir, par.cd.tracks[0].diskFile);
+		LOG.log(' - Cutting file ${imageFile} ');
+
 		arexec = new ArrayExecSync(par.cd.tracks);
 		// --
 		arexec.queue_action = function(tr:CueTrack) {
@@ -55,7 +57,7 @@ class Task_CutTracks extends Task
 				if (b) arexec.next(); else fail(cutter.error_log, cutter.error_code);
 			});
 			
-			cutter.cut(	par.imagePath, 
+			cutter.cut(	imageFile, 
 						Path.join(par.tempDir, tr.getFilenameRaw()),
 						tr.sectorStart * par.cd.SECTORSIZE,	// start byte
 						tr.sectorSize * par.cd.SECTORSIZE); // bytes to get
@@ -68,8 +70,8 @@ class Task_CutTracks extends Task
 			LOG.log("Cutting Complete");
 			// Delete the image file??
 			if (flag_delete_source) {
-				LOG.log('Deleting image file "${par.imagePath}"');
-				Fs.unlinkSync(par.imagePath);
+				LOG.log('Deleting image file "$imageFile"');
+				Fs.unlinkSync(imageFile);
 			}
 			complete();
 		}

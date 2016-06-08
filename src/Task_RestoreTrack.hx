@@ -47,15 +47,14 @@ class Task_RestoreTrack extends Task
 		trackFullPath = Path.join(shared.tempDir, track.filename);
 		LOG.log('Restore Track $trackFullPath');
 		
-		if (!track.isData) 
+		if (!track.isData)  // AUDIO 
 		{
-			// AUDIO 
 			var ffmpeg = new FFmpegAudio();
 			addListeners(ffmpeg);
 			ffmpeg.convertToPCM(trackFullPath);	// no output param will extract to same dir as input file
-		}else 
+			
+		}else // ECM DATA
 		{
-			// ECM DATA
 			var ecm = new EcmTools();
 			addListeners(ecm);
 			ecm.unecm(trackFullPath);
