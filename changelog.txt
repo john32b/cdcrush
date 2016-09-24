@@ -4,6 +4,12 @@
 CHANGELOG:
 ----------
 
+
+
+V 1.1.1
+	. BUGFIX, Can now restore .arc files made any version of CDCRUSH,
+			  The issue was on the djNode CDInfo class
+
 V 1.1 
 
 	. BUGFIX, You can now use spaces and symbols at the pathnames. e.g "C:/@ @ #$%^ games/isos @#/"

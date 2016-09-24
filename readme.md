@@ -1,7 +1,7 @@
 CDCRUSH
 ========
 
-**Version:** 1.1
+**Version:** 1.1.1
 **Author:** John Dimi, <johndimi@outlook.com>, twitter:[@jondmt](https://twitter.com/jondmt)  
 **Language:** Haxe 3.2 **Compiles to:** nodeJS (windows)
 
