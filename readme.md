@@ -1,7 +1,7 @@
 CDCRUSH
 ========
 
-**Version:** 1.1.1
+**Version:** 1.1.2
 **Author:** John Dimi, <johndimi@outlook.com>, twitter:[@jondmt](https://twitter.com/jondmt)  
 **Language:** Haxe 3.2 **Compiles to:** nodeJS (windows)
 
@@ -14,7 +14,12 @@ This is the source code repository.
 
 ### CHANGELOG
 
-**Version 1.1** : 	
+**Version 1.1.2**
+- BUGFIX, Supports filenames with a single bracket in the cue files
+- EXPERIMENTAL : Flag "-s", can restore multitrack games into a single CUE/BIN file
+- BUGFIX, Can now restore .arc files made with any version of CDCRUSH,
+
+**Version 1.1** :
 - BUGFIX, You can now use spaces and symbols in the pathnames. e.g.
   `cdcrush "C:/@ @ #$%^ games/isos @#/game.arc"`
 - NEW, run with "-f" to restore ARC files to separate folders.

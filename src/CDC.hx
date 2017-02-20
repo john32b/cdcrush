@@ -67,7 +67,7 @@ class CDC
 	//--- CDCrush parameters
 	public static inline var AUTHORNAME 		= "JohnDimi, twitter@jondmt";
 	public static inline var PROGRAM_NAME 		= "CD Crush";
-	public static inline var PROGRAM_VERSION 	= "1.1.1";
+	public static inline var PROGRAM_VERSION 	= "1.1.2";
 	public static inline var PROGRAM_SHORT_DESC	= "Dramatically reduce the filesize of CD image games";
 	public static inline var CDCRUSH_SETTINGS   = "crushdata.json";
 	public static inline var CDCRUSH_EXTENSION  = "arc";
@@ -105,6 +105,9 @@ class CDC
 	
 	// FLAG - f - Restore to folder
 	public static var flag_res_to_folders:Bool = false;
+	
+	// EXPERIMENTAL - s - Restore to a single bin/cue regardless of origin
+	public static var flag_single_restore:Bool = false;
 	
 	//---------------------------------------------------;
 	// List of files to process
@@ -153,6 +156,8 @@ class CDC
 		simulatedRun = params.sim;
 		flag_overwrite = params.flag_overwrite;
 		flag_res_to_folders = params.flag_res_to_folders;
+		flag_single_restore = params.flag_single_restore;
+		
 		
 		queueCurrent = 0;
 		queueTotal = fileList.length;

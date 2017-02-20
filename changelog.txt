@@ -4,10 +4,15 @@
 CHANGELOG:
 ----------
 
+	
+V 1.1.2
 
-
+	. BUGFIX, Supports filenames with a single bracket in the cue files
+	. EXPERIMENTAL : Flag "-s", can restore multitrack games into a single CUE/BIN file
+		
 V 1.1.1
-	. BUGFIX, Can now restore .arc files made any version of CDCRUSH,
+
+	. BUGFIX, Can now restore .arc files made with any version of CDCRUSH,
 			  The issue was on the djNode CDInfo class
 
 V 1.1 

@@ -37,6 +37,7 @@ class Main extends BaseApp
 		addParam("r", "Restore", "Restore a crushed image (.arc files)");
 		addParam("-t", "Temp Directory", "Set a custom working directory", true);
 		addParam("-w", "Force Overwrite", "Overwrite any files", false, false, true );
+		addParam("-s", "Single File Restore", "Force restore to a single bin/cue", false, false, true );
 		addParam("-f", "Restore to Folders", "Restore ARC files to separate folders", false, false);
 		addParam("-q", "Audio compression quality",
 						'1 - ${CDC.audioQualityInfo[0]}#nl' +
@@ -88,7 +89,8 @@ class Main extends BaseApp
 			quality: getOptionParameter('-q'),
 			output : params_Output,
 			flag_overwrite : params_Options.exists('-w'),
-			flag_res_to_folders : params_Options.exists('-f')
+			flag_res_to_folders : params_Options.exists('-f'),
+			flag_single_restore: params_Options.exists('-s')
 		} );
 		
 		// This will triger the first file of the list

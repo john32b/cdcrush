@@ -30,12 +30,16 @@ class Task_JoinTracks extends Task
 		progress_steps_total = par.cd.tracks_total;
 		super.run();
 		LOG.log('Joining tracks to an image. Total tracks ${par.cd.tracks_total}');
-		
-		if (par.cd.isMultiImage) {
-			LOG.log("- NO need to JOIN, Track is multitrack");
-			complete();
-			return;
-		}
+				
+		/*
+		 * Perhaps I want to force-join
+		 * 
+			if (par.cd.isMultiImage) {
+				LOG.log("- NO need to JOIN, Track is multitrack");
+				complete();
+				return;
+			}
+		*/
 
 		
 		// No need to join, just move the file
