@@ -9,23 +9,23 @@ import djNode.tools.LOG;
 import djNode.tools.StrTool;
 
 
-// --
 // The main class is separated from the Core CDCRUSH functionality
 // This is responsible for setting the running parameters and displaying
 // info on the terminal.
-// If I were to do another interface, I would only have to change the interface
-// not the CDCRUSH Core class ! ( Like an html5 interface? )
+// --
 class Main extends BaseApp
 {	
 	// Terminal indo writer object
 	var info:ActionInfo;
+	
 	// Procedure to apply
 	var action:String;
 	//---------------------------------------------------;
+	
 	// --
 	override function init():Void 
 	{
-		// App info
+		// djNode App Initialize :
 		info_program_name = CDC.PROGRAM_NAME;
 		info_program_version = CDC.PROGRAM_VERSION;
 		info_program_desc = CDC.PROGRAM_SHORT_DESC;
@@ -46,17 +46,22 @@ class Main extends BaseApp
 						'4 - ${CDC.audioQualityInfo[3]}', true);
 						
 		#if debug addParam("-sim", "Simulate run", "Debugging purposes"); #end
+		
 		// Auto crush cue and ccd files
 		setActionByFileExt("c", ["cue", "ccd"]);
+		
 		// Auto restore arc files
 		setActionByFileExt("r", [CDC.CDCRUSH_EXTENSION]);
+		
 		help_text_input = "~darkgray~Action is determined by input file extension.\nSupports multiple inputs and wildcards (*.cue)";
 		help_text_output = "~darkgray~Specify output directory.";
+		
 		// Must set parameters before calling super.init();
 		super.init();	
 	}//---------------------------------------------------;
-	// --
+	
 	// This is autocalled after the init() is done.
+	// --
 	override function create():Void 
 	{ 
 		// Clear the screen and start from the top of the console?
