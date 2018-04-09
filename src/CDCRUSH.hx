@@ -67,11 +67,11 @@ class CDC
 	//--- CDCrush parameters
 	public static inline var AUTHORNAME 		= "JohnDimi, twitter@jondmt";
 	public static inline var PROGRAM_NAME 		= "CD Crush";
-	public static inline var PROGRAM_VERSION 	= "1.1.2";
-	public static inline var PROGRAM_SHORT_DESC	= "Dramatically reduce the filesize of CD image games";
+	public static inline var PROGRAM_VERSION 	= "1.3";
+	public static inline var PROGRAM_SHORT_DESC	= "Highy compress cd-image games";
 	public static inline var CDCRUSH_SETTINGS   = "crushdata.json";
 	public static inline var CDCRUSH_EXTENSION  = "arc";
-	public static inline var QUALITY_DEFAULT	= 2;
+	//public static inline var QUALITY_DEFAULT	= 2;
 	
 	//====================================================;
 	// Batch parameters , applies to all files in queue
