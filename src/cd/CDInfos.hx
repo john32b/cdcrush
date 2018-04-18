@@ -67,9 +67,6 @@ class CDInfos
 	public var MULTIFILE:Bool;				// The CD was read from a CUE with multiple files, (every track own file)
 	public var tracks:Array<CDTrack>;		// Hold all the CD tracks here
 
-	// -- Holds the latest error occured so the user can read it
-	public var ERROR(default, null):String; 
-	
 	// -- Helpers used by parser
 	var openTrack:CDTrack;	// current track
 	var openFile:String;	// current track filename
@@ -83,7 +80,6 @@ class CDInfos
 		CD_AUDIO_QUALITY = null; CD_TOTAL_SIZE = 0;
 		SECTOR_SIZE = 0; MULTIFILE = false;
 		tracks = [];
-		ERROR = null;
 		openTrack = null; openFile = null;
 	}//---------------------------------------------------;
 
@@ -133,6 +129,8 @@ class CDInfos
 			
 		}// --
 		
+		// Finished parsing, don't need this anymore:
+		openTrack = null;
 		
 		// -- Post Parse Checks and Inits
 		
@@ -344,11 +342,12 @@ class CDInfos
 				i.storedFileName = i.filename;
 				i.byteSize = i.diskFileSize;
 				i.md5 = "-";
-				if (dt == null && i.trackType != "AUDIO") dt = i.trackType;
+				if (dt == null && i.trackType != "AUDIO") dt = i.trackType; // If any track is data, then this is the CD TYPE
 				if (i.diskFile != null) diskFiles++;
 				anyAudio = (!anyAudio && i.trackType == "AUDIO");
 			}
-			obj.audio = anyAudio ? "Ogg Vorbis ???Kbps" : null;
+			obj.audio = anyAudio ? "?" : null; // All tracks encoded with past vers were FLAC or VORBIS
+			/// TODO, capture FLAC or VORBIS based on filename
 			obj.totalSize = obj.imageSize;
 			obj.multiFile = (diskFiles > 1) && (diskFiles == TR.length);
 			obj.cdType = (dt == null) ? "AUDIO" : dt;
@@ -598,7 +597,7 @@ class CDInfos
 	{
 		LOG('cdTitle:$CD_TITLE, cdType:$CD_TYPE , totalSize:$CD_TOTAL_SIZE');
 		LOG('multiFile:$MULTIFILE, audio:$CD_AUDIO_QUALITY, tracks:${tracks.length}');
-		//for (i in tracks) LOG(i.toString());
+		for (i in tracks) LOG(i.toString_());
 		LOG(' ---');
 	}//---------------------------------------------------;
 	

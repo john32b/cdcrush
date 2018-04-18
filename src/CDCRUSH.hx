@@ -1,335 +1,408 @@
-/**--------------------------------------------------------
- * CDCRUSH
- * @author: johndimi, <johndimi@outlook.com> , @jondmt
- * --------------------------------------------------------
- * @Description
- * -------
- * CDcrush main engine static class
+/**----------------------------------------------
+ * == CDCRUSH.hx
+ *  - @Author: johndimi, <johndimi@outlook.com>
+ * ----------------------------------------------
+ *  CDCRUSH main engine class, 
+ *  responsible for all operations
+ * ----------------------------------------------
  * 
- * @Notes
- * ------
+ * Notes:
+ * 
+ * 	-
  * 
  ========================================================*/
+ 
 package;
-
-import djNode.task.FakeTask;
-import djNode.task.Job;
-import djNode.task.Task;
-import djNode.tools.CDInfo;
+import app.FFmpegAudio;
+import cd.CDInfos;
+import djNode.task.CJob;
+import djNode.task.CJob.CJobStatus;
 import djNode.tools.FileTool;
 import djNode.tools.LOG;
+import djNode.tools.StrTool;
+import js.Error;
 import js.Node;
 import js.node.Fs;
+import js.node.Os;
 import js.node.Path;
 
 
-// Put job parameters into an object
-// for easy access from tasks
-class CDCRunParameters
-{
-	// Parsed CUE info, useful to share between tasks
-	public var cd:CDInfo; 
-	
-	// File being processed, can be short or full path
-	public var input:String;
-	// Used in crush, FULL Path of generated ARC
-	public var crushedArc:String;
-	
-	public var imagePath:String; // When Restoring Single Tracks
-	public var cuePath:String;   // Whem Restoring Single tracks
-	
-	// Path that the input file is on.
-	// e.g. (If input file is "c:\iso\game.arc" then inputDir == "c:\iso\")
-	public var inputDir:String;
-	// Path that the files are going to be extracted and worked on
-	public var tempDir:String;
-	// MUST BE SET. Every job can have it's own output dir.
-	public var outputDir:String;
-	// Size in bytes, useful for reporting
-	public var sizeBefore:Int;
-	// Size in bytes, useful for reporting
-	public var sizeAfter:Int; 
-	//-- Job que counter--
-	public var queueCurrent:Int; // Current order in the queue
-	public var queueTotal:Int;
-	public function new() { }
-}//--
 
-/**
- * Main CDCRUSH engine
- */
-class CDC
+//   ___ ___     ___ ___ _   _ ___ _  _ 
+//  / __|   \   / __| _ \ | | / __| || |
+// | (__| |) | | (__|   / |_| \__ \ __ |
+//  \___|___/   \___|_|_\\___/|___/_||_|
+//
+
+class CDCRUSH
 {
 	//====================================================;
 	// SOME STATIC VARIABLES ABOUT THE CDCRUSH ENGINE
 	//====================================================;
 	
-	//--- CDCrush parameters
-	public static inline var AUTHORNAME 		= "JohnDimi, twitter@jondmt";
-	public static inline var PROGRAM_NAME 		= "CD Crush";
-	public static inline var PROGRAM_VERSION 	= "1.3";
-	public static inline var PROGRAM_SHORT_DESC	= "Highy compress cd-image games";
-	public static inline var CDCRUSH_SETTINGS   = "crushdata.json";
-	public static inline var CDCRUSH_EXTENSION  = "arc";
-	//public static inline var QUALITY_DEFAULT	= 2;
+	// -- Program Infos
+	public static inline var AUTHORNAME = "John Dimi";
+	public static inline var PROGRAM_NAME = "cdcrush";
+	public static inline var PROGRAM_VERSION = "1.3";
+	public static inline var PROGRAM_SHORT_DESC = "Highy compress cd-image games";
+	public static inline var LINK_DONATE = "https://www.paypal.me/johndimi";
+	public static inline var LINK_SOURCE = "https://github.com/johndimi/cdcrush";
+	public static inline var CDCRUSH_SETTINGS = "crushdata.json";
+	public static inline var CDCRUSH_COVER = "cover.jpg";	// Unused in CLI modes
+	public static inline var CDCRUSH_EXTENSION = ".arc";	
 	
-	//====================================================;
-	// Batch parameters , applies to all files in queue
-	//====================================================;
-	// Operation mode, one of : [ crush, restore ]
-	public static var batch_mode(default,null):String;
-	// Global Quality to compress the audio tracks
-	// 	1:lowest
-	// 	2:normal (default)
-	// 	3:high
-	//	 4:lossless
-	public static var batch_quality(default, null):Int;
-	// Hold the text of the audio infos
-	public static var audioQualityInfo(default, null):Array<String> = [ 
-		'Ogg Vorbis, 96kbps VBR', 
-		'Ogg Vorbis, 128kbps VBR',
-		'Ogg Vorbis, 196kbps VBR',
-		'FLAC, Lossless'
+	// When restoring a cd to a folder, put this at the end of the folder's name
+	public static inline var RESTORED_FOLDER_SUFFIX = " (r)";	
+	
+	// The temp folder name to create under `TEMP_FOLDER`
+	// No other program in the world should have this unique name, right?
+	// ~~ Shares name with the C# BUILD
+	public static inline var TEMP_FOLDER_NAME = "CDCRUSH_361C4202-25A3-4F09-A690";
+	
+	// Keep temporary files, don't delete them
+	// Currently for debug builds only
+	public static var FLAG_KEEP_TEMP:Bool = false;
+	
+	// Maximum concurrent tasks in CJobs
+	public static var MAX_TASKS:Int = 2;
+	
+	// Is FFMPEG ready to go?
+	public static var FFMPEG_OK(default, null):Bool;
+	
+	// FFMPEG path
+	public static var FFMPEG_PATH(default, null):String;
+
+	// Relative directory for the external tools (Arc, EcmTools)
+	public static var TOOLS_PATH(default, null):String;
+
+	// This is the GLOBAL Temp Folder used for ALL operations
+	public static var TEMP_FOLDER(default, null):String;
+		
+	// General use Error Message, read this to get latest errors from functions
+	//public static var ERROR(default, null):String;
+	
+	// Available Audio Codecs
+	public static var AUDIO_CODECS(default, null):Map<String,String> = [
+		"flac" => "FLAC",
+		"vorbis" => "Ogg Vorbis",
+		"opus" => "Ogg Opus",
+		"mp3" => "MP3"
 	];
-	// Temp dir for file operations
-	public static var batch_tempdir(default, null):String;
-	// Output directory for the files. If null it's the same as each file's input dir
-	public static var batch_outputDir(default, null):String;
-	// This will be displayed to the user as the output dir.
-	public static var outputDir_Info(default, null):String;
-	// If true, then no real file will be processed, and the outputs will be simulated
-	public static var simulatedRun:Bool = false;
 	
-	// FLAG - w - Overwrite files
-	public static var flag_overwrite:Bool = false;
-	
-	// FLAG - f - Restore to folder
-	public static var flag_res_to_folders:Bool = false;
-	
-	// EXPERIMENTAL - s - Restore to a single bin/cue regardless of origin
-	public static var flag_single_restore:Bool = false;
-	
-	//---------------------------------------------------;
-	// List of files to process
-	static var fileList:Array<String>;
-	// Original queue length when the engine was inited
-	static var queueTotal:Int;
-	// Queue counter
-	static var queueCurrent:Int;
-	//====================================================;
-	
-	// User set, push job updates there
-	// passthrough , check Job.hx
-	public static var onJobStatus:String->Job->Void; // ! MUST BE SET
-	// User set, push task updates
-	// passthrough, check Task.hx
-	public static var onTaskStatus:String->Task->Void;
-	// All operations complete
-	public static var onComplete:Void->Void;
+	// #Externally Set, all Jobs will push progress there
+	public static var JOB_STATUS_HANDLER:CJobStatus->CJob->Void = null;
 	
 	
-	//====================================================;
-	// Functions 
-	//====================================================;
+	// -----
 	
-	/**
-	 * Init the engine, and set the running parameters
-	 * ..
-	 * @param	fileList_ File list to process
-	 * @param	params Object:
-	 * 			{ 
-	 * 				quality:int, 1-4, audio quality when crushing 
-	 * 				temp:String, temporary dir for operations 
-	 * 				mode:String, 'crush' or 'restore'
-	 * 				output:String, output dir for the new files
-	 * 				sim:Bool, #DEBUG ONLY#, simulation mode
-	 * 			}
-	 */
-	public static function init(fileList_:Array<String>, params:Dynamic)
+	public static function init(?tempFolder:String)
 	{
-		// Set the global running parameters
-		fileList = fileList_;
-		batch_mode = params.mode;
-		batch_tempdir = params.temp;
-		batch_quality = params.quality;
-		batch_outputDir = params.output;
-		simulatedRun = params.sim;
-		flag_overwrite = params.flag_overwrite;
-		flag_res_to_folders = params.flag_res_to_folders;
-		flag_single_restore = params.flag_single_restore;
+		LOG.log('== ' + PROGRAM_NAME + ' - v ' + PROGRAM_VERSION);
+		LOG.log('== ' + PROGRAM_SHORT_DESC);
+		LOG.log('== --------------------------');
 		
-		
-		queueCurrent = 0;
-		queueTotal = fileList.length;
-		
+		//
 		#if debug
-		// -- SIMULATED RUN --
-		// -  Fake run parameters
-		if (simulatedRun) { 
-		switch(batch_mode) {
-			case "crush":
-				fileList = ["c:\\Sonic CD [J].cue"];
-				batch_tempdir = "g:\\temp";
-				batch_outputDir = "c:\\";
-				outputDir_Info = ". (Same as source)";
-				batch_quality = 3;
-				queueTotal = 1;
-				return;
-			case "restore":
-				fileList = ["c:\\Wipeout [JUE].arc"];
-				batch_tempdir = "g:\\temp";
-				batch_outputDir = "c:\\";
-				outputDir_Info = ". (Same as source)";
-				queueTotal = 1;
-				return;
-		} }
+			TOOLS_PATH = "../tools/";
+			FFMPEG_PATH = "";
+		#else
+			TOOLS_PATH = "tools";
+			FFMPEG_PATH = "";
 		#end
 		
+		CDInfos.LOG = function(l){ LOG.log(l); }	
 		
-		// -------------------------
-		// -- Normal run
-		// - Assert input parameters 
+		// ERROR = null;	// In case of eror/
 		
-		if (queueTotal == 0) {
-			throw 'No files to process';
-		}
-		
-		// It should be checked before, but check again
-		if (['crush', 'restore'].indexOf(batch_mode) < 0) {
-			throw 'Invalid operation mode ($batch_mode)';
-		}
-		
-		if (batch_quality == null) batch_quality = QUALITY_DEFAULT; else
-		if (batch_quality < 1) batch_quality = 1; else
-		if (batch_quality > 4) batch_quality = 4;
-		
-		// -- Check if tempdir is there ( GOING TO BE RECHECKED LATER AT A TASK IF NULL )
-		if (batch_tempdir != null)
-		{
-			// I am not checking for write access here
-			// First task is to write there, so if no write access should throw error there.
-			batch_tempdir = Path.normalize(batch_tempdir);
-			if (!FileTool.pathExists(batch_tempdir)) {
-				throw 'Temp dir "$batch_tempdir" does not exist.';
-			}
-		}
-		
-		// -- Check output dir
-		if (batch_outputDir == null) {
-			outputDir_Info = ". (Same as source)";
-		}else {
-			batch_outputDir = Path.normalize(batch_outputDir);
-			outputDir_Info = batch_outputDir + "\\";
-		}
-
-		
-		// -- Some parameters are sanitized.
-		LOG.log('-- CDC RUN PARAMETERS --');
-		LOG.log(' mode      = $batch_mode');
-		LOG.log(' quality   = $batch_quality');
-		LOG.log(' outputDir = $batch_outputDir');
-		LOG.log(' tempdir   = $batch_tempdir');
-		LOG.log(' files     = $fileList');
-		LOG.log('-------------------------');
+		setTempFolder(tempFolder);
 	}//---------------------------------------------------;
-
 	
-	// --
-	// Start a new processing job from the next file in queue
-	public static function processNextFile()
+	
+	/**
+	   Try to set a temp folder, Returns success
+	   @param	f The ROOT folder in which the temp folder will be created
+	   @return  SUCCESS 
+	**/
+	public static function setTempFolder(?tmp:String)
 	{
-		var fileToProcess = fileList.shift();
+		var TEST_FOLDER:String;
 		
-		if (fileToProcess == null){
-			if (onComplete != null) onComplete();
-			return;
+		if (tmp == null) tmp = Os.tmpdir();
+		
+		TEST_FOLDER = Path.join(tmp, TEMP_FOLDER_NAME);
+		
+		try{
+			FileTool.createRecursiveDir(TEST_FOLDER);
+		}catch (e:String){
+			LOG.log("Can't Create Temp Folder : " + TEST_FOLDER, 4);
+			LOG.log(e, 4);
+			throw "Can't Create Temp Folder : " + TEST_FOLDER;
 		}
 		
-		// Set the job infos
-		var inf:CDCRunParameters = new CDCRunParameters();
-		inf.input = Path.normalize(fileToProcess);
-		inf.inputDir = Path.dirname(fileToProcess);
-		inf.outputDir = batch_outputDir;
-		inf.tempDir = batch_tempdir;	   // Pass the root of the tempdir, going to be processed first thing
-		
-		inf.queueTotal = queueTotal;	   // Just for infos
-		inf.queueCurrent = ++queueCurrent; // Just for infos
-		
-		var job:Job = switch(batch_mode) {
-			case "crush": new Job_Crush('crush');
-			case "restore": new Job_Restore('restore');
-			case _: throw "Critical";
+		// Write Access
+		if (!FileTool.hasWriteAccess(TEST_FOLDER))
+		{
+			throw "Don't have write access to Temp Folder : " + TEST_FOLDER;
 		}
 		
-		job.sharedData = inf;
-		job.onJobStatus = onJobStatus;	// send to user
-		job.onTaskStatus = onTaskStatus; // send to user
-		job.onComplete = processNextFile;
-		
-		job.start();
-		
+		TEMP_FOLDER = TEST_FOLDER;
+		LOG.log("+ TEMP FOLDER = " + TEMP_FOLDER);
 	}//---------------------------------------------------;
+	
+	
+	/**
+	   
+	   @param	codecInfo { id, quality }
+	   @return
+	**/
+	public static function getAudioQualityString(codecInfo:AudioCodecParams):String
+	{
+		var res:String = AUDIO_CODECS.get(codecInfo.id) + ' ';		
+		switch(codecInfo.id) {
+			case 'flac':
+				res += "Lossless";
+			case 'vorbis':
+				res += FFmpegAudio.VORBIS_QUALITY[codecInfo.quality] + 'k Vbr';
+			case 'opus' : 
+				res += FFmpegAudio.OPUS_QUALITY[codecInfo.quality] + 'k Vbr';
+			case 'mp3':
+				res += FFmpegAudio.MP3_QUALITY[codecInfo.quality] + 'k Vbr';
+		}
+		return res;
+	}//---------------------------------------------------;
+	
+	/**
+	   Check if path exists and create it
+	   If it exists, rename it to a new safe name, then return the new name
+	**/
+	public static function checkCreateUniqueOutput(A:String, B:String = ""):String
+	{
+		var path:String = "";
+		
+		try{
+			path = Path.join(A, B);
+		}catch (e:Error){
+			throw "Can't join paths (" + A + " + " + B + " ) ";
+		}
+	
+		while (FileTool.pathExists(path))
+		{
+			path = path + "_";
+			LOG.log("! OutputFolder Exists, new name: " + path);
+		}
+	
+		// Path now is unique
+		try{
+			FileTool.createRecursiveDir(path);
+		}catch (e:String){
+			throw "Can't create " + path;
+		}
+	
+		// Path is created OK
+		return path;
+	}//---------------------------------------------------;
+	
+	/**
+	   Check if file EXISTS and is of VALID EXTENSION 
+	   ~Throws Errors
+	   @param ext Extension WITH "."
+	**/
+	public static function checkFileQuick(file:String, ext:String)
+	{
+		if (!FileTool.pathExists(file))
+		{
+			throw "File does not exist " + file;
+		}
+		
+		if (Path.extname(file).toLowerCase() != ext)
+		{
+			throw "File, not valid extension " + file;
+		}
+
+	}//---------------------------------------------------;
+
+	// --
+	public static function getSubTempDir():String
+	{
+		return Path.join(TEMP_FOLDER , StrTool.getGUID().substr(0, 12));
+	}//---------------------------------------------------;
+	
+	//====================================================;
+	// JOBS
+	//====================================================;
+	
+	public static function startJob_ConvertCue()
+	{
+		
+	}
+	
+	public static function startJob_CrushCD()
+	{
+	}
+	
+	public static function startJob_RestoreCD()
+	{
+	}
+	
+	
+	
 	
 	
 	//====================================================;
-	// HELPERS
+	// TESTS 
 	//====================================================;
 	
-	// Return a unique string in the form of : "_temp_game_24255362"
-	// It's time based so it's unique
-	// -- Filename should only be the filename without the ext
-	static function generateTempFolderName(filename:String):String
+	#if debug
+	// Simple small unit tests
+	// Tests some functions and objects
+	// @param tempFolder : A temporary folder for operations (ROOT) a subfolder will be created
+	public static function doTest(testFolder:String="")
 	{
-		filename = ~/\s/gi.replace(filename, "");
-		return '_temp_${filename}_' + Std.string(Date.now().getTime());
-	}//---------------------------------------------------;
-	
-	// -- Create the temp dir at the proper path
-	// returns true if OK, false of something wrong
-	public static function createTempDir(par:CDCRunParameters)
-	{
-		// -- Temp Dir check
-		if (par.tempDir == null) {
-			par.tempDir = par.outputDir;
-		}
-		par.tempDir = Path.join(par.tempDir, generateTempFolderName(Path.parse(par.input).name));
-	
-		// Try to create the temp dir
-		try {
-			LOG.log('Creating temp directory "${par.tempDir}"');
-			FileTool.createRecursiveDir(par.tempDir);
-		}catch (e:String) {
-			return false;
-		}
-		return true;
-	}//---------------------------------------------------;
-	
-	
-	
-	
-	
-	// --
-	public static function isWritable(dir:String)
-	{
-		// -- Check to see if output dir is writable
-		//    I am checking this early because I don't want to have a job
-		//    fail halfway because it can't write to some directory. Check it now.
+		trace('== CDRUSH UNIT TESTS ==');
+		trace('-----------------------');
 		
-		try {
-			var testFile = "_cdcrush_test_file_temp";
-			// Avoid a bug, where this file exists from a previous failed CDCRUSH process?
-			if (FileTool.pathExists(Path.join(dir, testFile)) == false) {
-				Fs.writeFileSync(Path.join(dir, testFile), "ok");
-			}
-			Fs.unlinkSync(Path.join(dir, testFile));
-		}catch (e:Dynamic)
+		var pcmFile = "C:/Mega/projects/cdcrush.nodejs/tests/audio.pcm";
+		testFolder = Path.join(testFolder , "//_cdcrush_tests");
+		
+		// Delete the folder
+		if (FileTool.pathExists(testFolder))
 		{
-			if (!FileTool.pathExists(dir)) {
-				throw 'Folder "$dir" does not exist, or can\'t create';
-			}else {
-				throw 'Can\'t write to output dir "$dir" do you have write access?';
-			}
+			trace('- Test Unit Test Folder : "$testFolder" exists. Deleting.....');
+			FileTool.deleteRecursiveDir(testFolder);
+			trace(">> OK");
 		}
+		
+		trace('- Creating Unit Test Folder : "$testFolder"');
+		Fs.mkdirSync(testFolder);
+		trace(">> OK");
+		
+		// --
+		trace('- Setting Temp Folder to "$testFolder"');
+		setTempFolder(testFolder);
+		trace(">> OK");
+		
+		// --
+		var tf2 = Path.join(testFolder, "test");
+		trace('- CheckCreateUniqueOutput($tf2);');
+		checkCreateUniqueOutput(tf2);
+		checkCreateUniqueOutput(testFolder, 'test');
+		if (!FileTool.pathExists(tf2)) throw "Error";
+		if (!FileTool.pathExists(tf2 + "_")) throw "Error";
+		trace(">> OK.");
+		// --
+		trace("- GetAudioQualityString() Some Formats ::");
+		trace(getAudioQualityString({id:"flac",quality:0}));
+		trace(getAudioQualityString({id:"vorbis", quality:3}));
+		trace(getAudioQualityString({id:"opus", quality:3}));
+		trace(getAudioQualityString({id:"mp3", quality:3}));
+		trace(">> OK");
+		//--
+		
+		trace("-- Testing MD5 Calculator");
+		var	h = FileTool.getFileMD5(pcmFile);
+		if (h == "0181f9b11744c19c9e3142b3a5124855") trace(">> OK same"); else trace(">> ERROR");
+		
+		//--
+		
+		var g = new TaskRestoreTrack(null);
+		
+		
 	}//---------------------------------------------------;
+	#end
 	
-}//--//
+}//-- end class
+
+
+
+
+
+
+
+
+//====================================================;
+// TYPES 
+//====================================================;
+
+
+
+// - Describe an encoding Audio Quality
+typedef AudioCodecParams = {
+	id:String,	// check CDCRUSH.AUDIO_CODECS
+	quality:Int
+}// --
+
+
+/**
+   Object storing all the parameters for :
+   - CRUSH job
+   - CONVERT job
+**/
+class CrushParams
+{
+	public function new(){}
+	// -- Input Parameters -- //
+	
+	// The CUE file to compress
+	public var inputFile:String;
+	// Output Directory, The file will be autonamed
+	// ~ Optional ~ Defaults to the directory of the `inputfile`
+	public var outputDir:String;
+	// Audio settings for encoding
+	public var audio:CDCRUSH.AudioCodecParams;
+	// ARC compression level, 0-9 (engine default to 4)
+	public var compressionLevel:Int;
+
+	// -- Internal Access -- //
+	
+	// Keep the CD infos of the CD, it is going to be read later
+	public var cd:CDInfos;
+	// Filesize of the final archive
+	public var crushedSize:Int;
+	// Temp dir for the current batch, it's autoset, is a subfolder of the master TEMP folder.
+	public var tempDir:String;
+	// Final destination ARC file, autogenerated from CD TITLE
+	public var finalArcPath:String;
+	// If true, then all the track files are stored in temp folder and safe to delete
+	public var flag_sourceTracksOnTemp:Bool;
+	// USED in `JobConvertCue`
+	public var flag_convert_only:Bool;
+	
+}// --
+
+
+
+
+/**
+   Object storing all the parameters for 
+   - RESTORE job
+**/
+class RestoreParams
+{
+	public function new(){}
+	// -- Input Parameters -- //
+	
+	// The file to restore the CDIMAGE from
+	public var inputFile:String;
+	
+	// Output Directory. Will change to subfolder if `flag_folder`
+	// ~ Optional ~ Defaults to the directory of the `inputfile`
+	public var outputDir:String;
+	
+	// TRUE: Create a single cue/bin file, even if the archive was MULTIFILE
+	public var flag_forceSingle:Bool;
+	
+	// TRUE: Create a subfolder with the game name in OutputDir
+	public var flag_subfolder:Bool;
+	
+	// TRUE: Will not restore audio tracks. Will create a cue with enc audio 
+	public var flag_encCue:Bool;
+	
+	// : Internal Use :
+
+	// Temp dir for the current batch, it's autoset by Jobs
+	// is a subfolder of the master TEMP folder
+	public var tempDir:String;
+	// Keeps the current job CDINfo object
+	public var cd:CDInfos;
+	
+}// --

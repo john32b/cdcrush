@@ -5,4 +5,4 @@ This Cue Parser classes were build for **CDCRUSH**, This haxe code is generic so
 
 - Csharp
 - Javascript (nodejs)
-- Neko
+- Possible others? since it relies on haxe.io

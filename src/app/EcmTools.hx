@@ -3,93 +3,85 @@
  * -------
  * johndimi, johndimi@outlook.com
  * -------
- * @requires: [ecm.exe, unecm.exe]
- * @supportedplatforms: nodeJS
+ * @requires: 	[ecm.exe, unecm.exe] Windows
+ * 				[ecm-compress,ecm-uncompress] Linux
  * 
+ * @supports: nodeJS
+ * @platform: windows, Linux
  * 
- * Provides an interface for the ecm tools
- * ECM tools must be in the executable file's folder
+ * 	Provides an interface for the ecm tools
+ * 
  * 
  * @events: 
- * 			progress(int), Percentage
+ * 			`close` 	: ExitOK:<Bool>, ErrorMessage:<String>
+ * 			`progress` 	: Percent<Int>
  *
  * ---------------------------------------*/
 
 
-package djNode.app;
+package app;
 
 
-import djNode.tools.FileTool;
+import djNode.utils.CLIApp;
 import djNode.tools.LOG;
 import js.Node;
-import djNode.app.AppSpawner;
 import js.node.Path;
 
-
-/*
-
-Version 0.9
-	Added output
 	
-Version 0.8
-	First
-	
-*/
-	
-class EcmTools extends AppSpawner
+class EcmTools extends CLIApp
 {
-	private static inline var win32_ecm:String   = "ecm.exe";
-	private static inline var win32_unecm:String = "unecm.exe";
+	#if windows
+		private static inline var win32_ecm:String   = "ecm.exe";
+		private static inline var win32_unecm:String = "unecm.exe";
+	#end
 
-	private static inline var linux_ecm:String   = "ecm-compress";
-	private static inline var linux_unecm:String = "ecm-uncompress";
+	#if linux
+		private static inline var linux_ecm:String   = "ecm-compress";
+		private static inline var linux_unecm:String = "ecm-uncompress";
+	#end
 
-	private var exe_ecm:String;
-	private var exe_unecm:String;
+	// Final Paths
+	var exe_ecm:String;
+	var exe_unecm:String;
 	
-	private var expr_dec = ~/\s*Decoding \((\d{1,3})%/;
-	private var expr_enc = ~/\s*Encoding \((\d{1,3})%/;
-		
-	//---------------------------------------------------;
+	var expr_dec = ~/\s*Decoding \((\d{1,3})%/;
+	var expr_enc = ~/\s*Encoding \((\d{1,3})%/;
 	
-	public function new() 
+	// --
+	public function new(ExeFolder:String = null) 
 	{
 		super();
 		
-		audit.linux = { check:true, type:"package",  param:"ecm"};
-		audit.win32 = { check:true, type:"folder",   param:win32_ecm };
-
-		if(platform == "linux") {
-			exe_ecm   = linux_ecm;
-			exe_unecm = linux_unecm;
-		}else 
-		if(platform == "win32") {
-			exe_ecm   = win32_ecm;
-			exe_unecm = win32_unecm;
-		}
+		#if windows
+			exe_ecm = Path.join(ExeFolder, win32_ecm);
+			exe_unecm = Path.join(ExeFolder, win32_unecm);
+		#elseif linux
+			exe_ecm = Path.join(ExeFolder, linux_ecm);
+			exe_unecm = Path.join(ExeFolder, linux_unecm);
+		#end
+		
 	}//---------------------------------------------------;
 	//
 	// Will produce to same directory as the input file
 	public function ecm(input:String, ?output:String ):Void 
-	{		
-		if (output != null)
-			spawnProc(Path.join(dir_exe, exe_ecm) , [input, output]);
+	{
+		exePath = exe_ecm;
+		listen_progress("encode");
+		if(output==null)
+			start([input]);
 		else
-			spawnProc(Path.join(dir_exe, exe_ecm) , [input]);
-		
-		listen_progress("encode");		
+			start([input, output]);
 	}//---------------------------------------------------;
 	
 	// Will ALWAYS un-ECM at the same dir as the file..
 	public function unecm(input:String, ?output:String):Void 
 	{
-		// It will just enecm at same dir for now.
-		if (output != null)
-			spawnProc(Path.join(dir_exe, exe_unecm) , [input, output]);
-		else
-			spawnProc(Path.join(dir_exe, exe_unecm) , [input]);
-			
+		exePath = exe_unecm;
 		listen_progress("decode");
+		if(output==null)
+			start([input]);
+		else
+			start([input, output]);
 	}//---------------------------------------------------;
 	
 	/**
@@ -99,12 +91,11 @@ class EcmTools extends AppSpawner
 	{	
 		var expr_per:EReg;
 		if (oper == "encode") expr_per = expr_enc; else expr_per = expr_dec;
-		proc.stderr.setEncoding("utf8");
-		proc.stderr.on("data", function(data:String) {
+		onStdErr = function(data){
 			if (expr_per.match(data)) {
 				events.emit("progress", Std.parseInt(expr_per.matched(1)));
 			}	
-		});				
+		};	
 	}//---------------------------------------------------;
 	
 		

@@ -6,3 +6,4 @@
 -main Main
 -js bin/app.js
 -D terminal
+-D windows
