@@ -2,7 +2,9 @@ package;
 
 import cd.CDInfos;
 import djNode.BaseApp;
+import djNode.task.CJob;
 import djNode.tools.LOG;
+import djNode.utils.CJobReport;
 
 /**
  * == CDCRUSH Main Entry for CLI
@@ -16,12 +18,12 @@ import djNode.tools.LOG;
 class Main extends BaseApp 
 {
 
+	// --
+	var filesQueue:Array<String>;
+
+	
 	override function init() 
-	{
-		#if debug
-		LOG.setLogFile("a:\\LOG.txt", true);
-		#end
-		
+	{		
 		//--
 		PROGRAM_INFO.name = CDCRUSH.PROGRAM_NAME;
 		PROGRAM_INFO.version = CDCRUSH.PROGRAM_VERSION;
@@ -33,13 +35,34 @@ class Main extends BaseApp
 		//
 		ARGS.Actions.push(['c', 'crush', 'Crush a CD image file', "cue"]);
 		ARGS.Actions.push(['r', 'restore', 'Restore a crushed image', "arc"]);
-		//ARGS.requireAction = true;
+
+		ARGS.requireAction = true;
+		
 		ARGS.helpInput = "Action is determined by input file extension.\nSupports multiple inputs and wildcards (*.cue)";
 		ARGS.helpOutput = "Specify output directory";
 
-		#if debug // -- Tests --
-		ARGS.Options.push(['-t1', '','load a cue','yes']);
-		ARGS.Options.push(['-t2', '','load json','yes']);
+		// flags ::
+		ARGS.Options.push(['-folder',  'Folder','Restore to a subfolder named after the CD title']);
+		ARGS.Options.push(['-enc', 'Encoded Audio/Cue','Restore/Convert to encoded audio files/.cue\nCan be used by crush and restore operations.']);
+		ARGS.Options.push(['-single',  'Force Single Bin','Restore to a single .bin/.cue ']);
+		
+		// other ::
+		ARGS.Options.push(['-temp', 'Temp Folder', 'Set a custom temp folder for operations', 'yes']);
+		ARGS.Options.push(['-log', 'Log File', 'Produce a log file to a path.(e.g. -log c:\\log.txt)', 'yes']);
+		
+		// codecs ::
+		ARGS.Options.push(['-ac', 'Audio Codec', 'Select an audio codec for encoding audio tracks\n' +
+				"'flac','opus','vorbis','mp3'", 'yes']);
+		ARGS.Options.push(['-aq', 'Audio Quality', 'Select an audio quality for the audio codec\n' +
+				"0:lowest, 10:highest (Ignored in FLAC)", 'yes']);
+				
+		ARGS.Options.push(['-cl', 'Compression Level', 'FreeArc compression Level,\n0:Fastest, 4:Default, 9:Highest(not recommended)', 'yes']);
+		
+		ARGS.Options.push(['-threads', 'Threads', 'Number of maximum threads allowed for operations (1-8)', 'yes']);
+		
+		
+		#if debug
+		LOG.setLogFile("a:\\LOG.txt", true);
 		#end
 		
 		super.init();
@@ -49,71 +72,55 @@ class Main extends BaseApp
 	{
 		printBanner();
 		
-		CDCRUSH.init();
-		
-		LOG.log("ACTION = " + argsAction);
-	
-		if (argsAction == "c")
-		{
-			LOG.log("Starting a CRUSH JOB");
-			
-			// test
-			var p = new CDCRUSH.CrushParams();
-				p.inputFile = argsInput[0];
-				p.audio = {id:'flac', quality:0};
-				p.compressionLevel = 4;
-				
-			var j = new JobCrush(p);
-				j.start();
-				
-				
-			return;
+		if (argsOptions.log != null){
+			LOG.setLogFile(argsOptions.log);
 		}
 		
-		if (argsAction == "r")
-		{
-			// test
-			var p = new CDCRUSH.RestoreParams();
-				p.inputFile = argsInput[0];
-				p.flag_subfolder = true;
-				//p.flag_encCue = true;
-				p.flag_forceSingle = true;
-				
-			var j = new JobRestore(p);
-				j.start();
-			return;
+		// If temp is set it will set it, if null it will set a default temp folder
+		CDCRUSH.init(argsOptions.temp);
+		
+		if (argsOptions.threads != null){
+			CDCRUSH.setThreads(Std.parseInt(argsOptions.threads));
 		}
 		
+		filesQueue = argsInput.copy();
 		
-		if (argsOptions.t1 != null)
-		{
-			var a = new CDInfos();
-			CDInfos.LOG = function(a){trace(a); };
-			a.cueLoad(argsOptions.t1);
-			
-			for (tr in a.tracks)
-			{
-				trace("BEFORE ----- ");
-				trace(tr);
-				tr.setNewTimesReset();
-				//tr.setNewTimesBasedOnSector(); // to singlefile
-				trace("AFTER setNewTimesReset() ----- ");
-				trace(tr);
-			}
-			
-			return;
-		}
-		
-		if (argsOptions.t2 != null)
-		{
-			var a = new CDInfos();
-			CDInfos.LOG = function(a){trace(a); };
-			a.jsonLoad(argsOptions.t2);
-		}
-		
-		LOG.log("OK");
+		processNextFile();
 		
 	}//---------------------------------------------------;
+	
+	
+	// --
+	function processNextFile()
+	{
+		var file = filesQueue.shift();
+		
+		trace("Processing " + file);
+		
+		var job:CJob;
+		
+		// - CRUSH
+		if (argsAction == "c")
+		{
+			var p = CDCRUSH.getCrushParams(
+					file, argsOutput, argsOptions.ac, argsOptions.aq, argsOptions.cl);
+			job = new JobCrush(p);
+			var rep = new CJobReport(job, true, true);
+			job.start();			
+		}
+		
+		// - RESTORE
+		if (argsAction == "r")
+		{
+			var p = CDCRUSH.getRestoreParams(
+					file, argsOutput, argsOptions.single, argsOptions.folder, argsOptions.enc);
+			job = new JobRestore(p);
+			var rep = new CJobReport(job);
+			job.start();			
+		}		
+		
+	}//---------------------------------------------------;
+	
 	
 	// --
 	static function main()  {

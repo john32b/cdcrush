@@ -12,7 +12,6 @@ import CDCRUSH.CrushParams;
 
 
 
-
 /**
  * A collection of tasks, that will CRUSH a cd,
  * Tasks will run in order, and some will run in parallel
@@ -21,9 +20,11 @@ import CDCRUSH.CrushParams;
  */
 class JobCrush extends CJob 
 {
-
+	// Push out information about the job at this callback
+	public var pushInfos:CrushParams->Void;
+	
 	// --
-	public function new(p:CrushParams) 
+	public function new(p:CrushParams)
 	{
 		super("Compress CD");
 		jobData = p;
@@ -68,9 +69,18 @@ class JobCrush extends CJob
 			cd.CD_AUDIO_QUALITY = CDCRUSH.getAudioQualityString(p.audio);
 
 			// Generate the final arc name now that I have the CD TITLE
-			p.finalArcPath= Path.join(p.outputDir, cd.CD_TITLE + ".arc");
+			p.finalArcPath = Path.join(p.outputDir, cd.CD_TITLE + CDCRUSH.CDCRUSH_EXTENSION);
+			
+			while (FileTool.pathExists(p.finalArcPath))
+			{
+				LOG.log(p.finalArcPath + "already exists, adding (_) until unique", 2);
+				p.finalArcPath = p.finalArcPath.substr(0, -4) + "_" + CDCRUSH.CDCRUSH_EXTENSION;
+			}
+			
 			LOG.log("- Destination Archive :" + p.finalArcPath );
 
+			if (pushInfos != null) pushInfos(p);
+			
 			t.complete();		
 					
 		}, "-Reading", "Reading Cue Data and Preparing"));
@@ -97,7 +107,6 @@ class JobCrush extends CJob
 		// ---------------------
 		add(new CTask(function(t) 
 		{
-		
 			var files:Array<String> = [];
 			for (tr in p.cd.tracks) {
 				// Dev note: working file was set earlier on TaskEncodeTrack();

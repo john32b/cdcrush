@@ -14,8 +14,10 @@ import CDCRUSH.RestoreParams;
  */
 class JobRestore extends CJob
 {
-
-	public function new(p:RestoreParams) 
+	// Push out information about the job at this callback
+	public var pushInfos:RestoreParams->Void;
+	
+	public function new(p:RestoreParams)
 	{
 		super("Restore CD");
 		jobData = p;
@@ -48,7 +50,6 @@ class JobRestore extends CJob
 		
 		FileTool.createRecursiveDir(p.tempDir);
 
-		
 		// Safeguard, even if the GUI doesn't allow it
 		if(p.flag_encCue)
 		{
@@ -129,15 +130,15 @@ class JobRestore extends CJob
 						tr.trackFile = '${p.cd.CD_TITLE} (track ${tr.trackNo})$ext';
 					}
 					
-					if (!p.cd.MULTIFILE) tr.setNewTimesReset(); // :: CONVERTS SINGLE TO MULTI
+					if (!p.cd.MULTIFILE) tr.rewriteIndexes_forMultiFile();
 					
 				} else 
 				// Restoring to a normal CD with BIN/CUE
 				{
 					
-					if (p.flag_forceSingle && p.cd.MULTIFILE) // :: CONVERT MULTI TO SINGLE
+					if (p.flag_forceSingle && p.cd.MULTIFILE)
 					{
-						tr.setNewTimesBasedOnSector();
+						tr.rewriteIndexes_forSingleFile();
 					}
 					
 					if (p.cd.MULTIFILE && !p.flag_forceSingle)
@@ -172,7 +173,10 @@ class JobRestore extends CJob
 			
 			// --
 			// Create CUE File
-			p.cd.cueSave(Path.join(p.outputDir,p.cd.CD_TITLE + ".cue"));
+			p.cd.cueSave(Path.join(p.outputDir, p.cd.CD_TITLE + ".cue"), [
+				'CDCRUSH (nodejs) version : ' + CDCRUSH.PROGRAM_VERSION,
+				CDCRUSH.LINK_SOURCE
+			]);
 
 			t.complete();
 		

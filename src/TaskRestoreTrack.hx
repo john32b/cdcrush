@@ -5,6 +5,7 @@ import app.FFmpegAudio;
 import cd.CDTrack;
 import djNode.task.CTask;
 import djNode.tools.FileTool;
+import djNode.tools.LOG;
 import js.node.Fs;
 import js.node.Path;
 
@@ -84,6 +85,7 @@ class TaskRestoreTrack extends CTask
 	// This is only when restoring from .OGG files, .FLAC seems to be fine by default.
 	function correctPCMSize()
 	{
+		LOG.log('+ Correcting PCM Size -- for track ${track.trackNo}');
 		var targetSize = track.byteSize;
 		Fs.truncateSync(track.workingFile, targetSize);
 		#if TEST_EVERYTHING
@@ -123,7 +125,7 @@ class TaskRestoreTrack extends CTask
 			deleteOldFile();
 			
 			try{
-				if (isFlac) correctPCMSize();
+				if (!track.isData && !isFlac) correctPCMSize();
 				checkRestoredMD5();
 			}catch (e:String){
 				fail(e);

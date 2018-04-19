@@ -356,14 +356,21 @@ class CDInfos
 		
 		if (versionLoaded == 3)// Convert V3 to V4
 		{
-			for (i in TR){
+			for (i in TR)
+			{
 				if (i.pregapMinutes > 0 || i.pregapSeconds > 0 || i.pregapMillisecs > 0){
 					i.pregap = new CueTime(0, i.pregapMinutes, i.pregapSeconds, i.pregapMillisecs);
+				}
+				
+				// index.millisecs -> index.frames
+				var indexes:Array<Dynamic> = i.indexes;
+				for (ii in indexes){
+					ii.frames = ii.millisecs;
+					Reflect.deleteField(ii, "millisecs");
 				}
 			}
 		}
 		
-
 		// -- Create Tracks ::
 		tracks = [];
 		for (i in TR) {
@@ -372,8 +379,6 @@ class CDInfos
 			tracks.push(t);
 		}
 		
-		
-
 		// -- CD INFOS ::
 		CD_TITLE = obj.cdTitle;
 		CD_TYPE = obj.cdType;
@@ -593,6 +598,7 @@ class CDInfos
 	
 	// --
 	// Quick INFO LOG
+	#if debug
 	function LOGINFOS()
 	{
 		LOG('cdTitle:$CD_TITLE, cdType:$CD_TYPE , totalSize:$CD_TOTAL_SIZE');
@@ -600,6 +606,9 @@ class CDInfos
 		for (i in tracks) LOG(i.toString_());
 		LOG(' ---');
 	}//---------------------------------------------------;
+	#else
+	inline function LOGINFOS() {}
+	#end
 	
 }//--
 

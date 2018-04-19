@@ -96,7 +96,7 @@ class CDTrack
 	
 	// Used when converting singleFile to multiFile
 	// Resets the first index to 0:0:0 and calculates the next indexes
-	public function setNewTimesReset()
+	public function rewriteIndexes_forMultiFile()
 	{
 		if (indexes.length == 0) return; // Should NEVER happen
 		
@@ -119,7 +119,7 @@ class CDTrack
 	// WARNING::
 	// ONLY works when the indexes start from 00!
 	// NOT ANY OTHER CASE
-	public function setNewTimesBasedOnSector()
+	public function rewriteIndexes_forSingleFile()
 	{
 		var old = indexes.copy();
 		
@@ -149,10 +149,12 @@ class CDTrack
 	}//---------------------------------------------------;
 	
 	// --
-	public function toString_()
+	// Quick Info of the track
+	public function toString_():String
 	{
-		return 	' - Track #$trackNo, type:$trackType, size:$byteSize, CueFile:$trackFile, indexes:${indexes.length}, ' +
-				'sectorStart:$sectorStart, sectorSize:$sectorSize, storedFile:$storedFileName, md5:$md5';
+		var s:String = "";
+		for (i in indexes) s += i + ", ";
+		return 	'Track #$trackNo, type:$trackType, indexes:[$s], size:$byteSize, sectorStart:$sectorStart, sectorSize:$sectorSize, CueFile:$trackFile, storedFile:$storedFileName, md5:$md5';
 	}//---------------------------------------------------;
 	
 	// --
@@ -225,27 +227,7 @@ class CueTime
 		seconds = s;
 		frames = f;
 	}//---------------------------------------------------;
-	
-	// From Sector Length to Time
 	// --
-	//public function fromSectors(secLen:Int):CueTime
-	//{
-		//minutes = Math.floor(secLen / 4500);
-		//seconds = Math.floor((secLen % 4500) / 75);
-		//frames = (secLen % 4500) % 75;
-		//return this;
-	//}//---------------------------------------------------;
-	//
-	//// Convert current index time to sector time
-	//// --
-	//public function toSectors():Int
-	//{
-		//var sector:Int = minutes * 4500;
-			//sector += seconds * 75;
-			//sector += frames;
-		//return sector;
-	//}//---------------------------------------------------;	
-	
 	public function toFrames():Int
 	{
 		// There are 75 frames per second

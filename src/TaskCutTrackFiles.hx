@@ -10,6 +10,7 @@ import js.node.Path;
 /**
  * Cut the a single CD BIN to multiple trackfiles
  *
+ * - If single track or multitrack, will skip
  * - track.workingFile : is set to the new cut track full path
  * 
  */

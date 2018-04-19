@@ -43,7 +43,7 @@ class CDCRUSH
 	// -- Program Infos
 	public static inline var AUTHORNAME = "John Dimi";
 	public static inline var PROGRAM_NAME = "cdcrush";
-	public static inline var PROGRAM_VERSION = "1.3";
+	public static inline var PROGRAM_VERSION = "1.4";
 	public static inline var PROGRAM_SHORT_DESC = "Highy compress cd-image games";
 	public static inline var LINK_DONATE = "https://www.paypal.me/johndimi";
 	public static inline var LINK_SOURCE = "https://github.com/johndimi/cdcrush";
@@ -58,6 +58,13 @@ class CDCRUSH
 	// No other program in the world should have this unique name, right?
 	// ~~ Shares name with the C# BUILD
 	public static inline var TEMP_FOLDER_NAME = "CDCRUSH_361C4202-25A3-4F09-A690";
+	
+	
+	public static inline var DEFAULT_AUDIO_C = "vorbis";
+	public static inline var DEFAULT_AUDIO_Q = 3;
+	
+	public static inline var DEFAULT_ARC_LEVEL = 4;
+	
 	
 	// Keep temporary files, don't delete them
 	// Currently for debug builds only
@@ -99,7 +106,11 @@ class CDCRUSH
 	{
 		LOG.log('== ' + PROGRAM_NAME + ' - v ' + PROGRAM_VERSION);
 		LOG.log('== ' + PROGRAM_SHORT_DESC);
-		LOG.log('== --------------------------');
+		#if TEST_EVERYTHING		
+		LOG.log("== DEFINED : TEST_EVERYTHING");
+		LOG.log("== > Will do extra checksum checks on all operations.");
+		#end
+		LOG.log('== ------------------------------------------------- \n\n');
 		
 		//
 		#if debug
@@ -118,6 +129,12 @@ class CDCRUSH
 	}//---------------------------------------------------;
 	
 	
+	public static function setThreads(t:Int)
+	{
+		if (t > 8) t = 8 else if (t < 0) t = 0;
+		MAX_TASKS = t;
+		LOG.log("== MAX_TASKS = " + MAX_TASKS);
+	}//---------------------------------------------------;
 	/**
 	   Try to set a temp folder, Returns success
 	   @param	f The ROOT folder in which the temp folder will be created
@@ -151,22 +168,25 @@ class CDCRUSH
 	
 	
 	/**
-	   
+	   ~ Also checks for validity ~
 	   @param	codecInfo { id, quality }
 	   @return
 	**/
-	public static function getAudioQualityString(codecInfo:AudioCodecParams):String
+	public static function getAudioQualityString(cc:AudioCodecParams):String
 	{
-		var res:String = AUDIO_CODECS.get(codecInfo.id) + ' ';		
-		switch(codecInfo.id) {
+		var res:String = AUDIO_CODECS.get(cc.id) + ' ';
+		if (cc.quality < 0 || cc.quality > 10) throw "Audio Codec Error, Quality must be 0-10";
+		switch(cc.id.toLowerCase()) {
 			case 'flac':
 				res += "Lossless";
 			case 'vorbis':
-				res += FFmpegAudio.VORBIS_QUALITY[codecInfo.quality] + 'k Vbr';
+				res += FFmpegAudio.VORBIS_QUALITY[cc.quality] + 'k Vbr';
 			case 'opus' : 
-				res += FFmpegAudio.OPUS_QUALITY[codecInfo.quality] + 'k Vbr';
+				res += FFmpegAudio.OPUS_QUALITY[cc.quality] + 'k Vbr';
 			case 'mp3':
-				res += FFmpegAudio.MP3_QUALITY[codecInfo.quality] + 'k Vbr';
+				res += FFmpegAudio.MP3_QUALITY[cc.quality] + 'k Vbr';
+			default:
+				throw "Audio Codec Error : " + cc.id;
 		}
 		return res;
 	}//---------------------------------------------------;
@@ -184,7 +204,7 @@ class CDCRUSH
 		}catch (e:Error){
 			throw "Can't join paths (" + A + " + " + B + " ) ";
 		}
-	
+		
 		while (FileTool.pathExists(path))
 		{
 			path = path + "_";
@@ -227,97 +247,44 @@ class CDCRUSH
 		return Path.join(TEMP_FOLDER , StrTool.getGUID().substr(0, 12));
 	}//---------------------------------------------------;
 	
-	//====================================================;
-	// JOBS
-	//====================================================;
-	
-	public static function startJob_ConvertCue()
-	{
-		
-	}
-	
-	public static function startJob_CrushCD()
-	{
-	}
-	
-	public static function startJob_RestoreCD()
-	{
-	}
-	
-	
-	
-	
 	
 	//====================================================;
-	// TESTS 
-	//====================================================;
 	
-	#if debug
-	// Simple small unit tests
-	// Tests some functions and objects
-	// @param tempFolder : A temporary folder for operations (ROOT) a subfolder will be created
-	public static function doTest(testFolder:String="")
+	/**
+	   Handle CLI parameters and return a CrushParams object with Default Values on missing fields
+	**/
+	public static function getCrushParams(inp:String, outp:String, ac:String, aq:Int, cl:Int):CrushParams
 	{
-		trace('== CDRUSH UNIT TESTS ==');
-		trace('-----------------------');
+		if (ac == null) ac = DEFAULT_AUDIO_C;
+		if (aq == null) aq = DEFAULT_AUDIO_Q;
+		if (cl == null) cl = DEFAULT_ARC_LEVEL;
 		
-		var pcmFile = "C:/Mega/projects/cdcrush.nodejs/tests/audio.pcm";
-		testFolder = Path.join(testFolder , "//_cdcrush_tests");
-		
-		// Delete the folder
-		if (FileTool.pathExists(testFolder))
-		{
-			trace('- Test Unit Test Folder : "$testFolder" exists. Deleting.....');
-			FileTool.deleteRecursiveDir(testFolder);
-			trace(">> OK");
-		}
-		
-		trace('- Creating Unit Test Folder : "$testFolder"');
-		Fs.mkdirSync(testFolder);
-		trace(">> OK");
-		
-		// --
-		trace('- Setting Temp Folder to "$testFolder"');
-		setTempFolder(testFolder);
-		trace(">> OK");
-		
-		// --
-		var tf2 = Path.join(testFolder, "test");
-		trace('- CheckCreateUniqueOutput($tf2);');
-		checkCreateUniqueOutput(tf2);
-		checkCreateUniqueOutput(testFolder, 'test');
-		if (!FileTool.pathExists(tf2)) throw "Error";
-		if (!FileTool.pathExists(tf2 + "_")) throw "Error";
-		trace(">> OK.");
-		// --
-		trace("- GetAudioQualityString() Some Formats ::");
-		trace(getAudioQualityString({id:"flac",quality:0}));
-		trace(getAudioQualityString({id:"vorbis", quality:3}));
-		trace(getAudioQualityString({id:"opus", quality:3}));
-		trace(getAudioQualityString({id:"mp3", quality:3}));
-		trace(">> OK");
-		//--
-		
-		trace("-- Testing MD5 Calculator");
-		var	h = FileTool.getFileMD5(pcmFile);
-		if (h == "0181f9b11744c19c9e3142b3a5124855") trace(">> OK same"); else trace(">> ERROR");
-		
-		//--
-		
-		var g = new TaskRestoreTrack(null);
-		
-		
+		var p = new CrushParams();
+		p.inputFile = inp;
+		p.outputDir = outp;
+		p.compressionLevel = cl;
+		p.audio =  {
+			id:ac,
+			quality:aq
+		};
+		return p;
 	}//---------------------------------------------------;
-	#end
 	
-}//-- end class
+	/**
+	   Handle CLI parameters and return a RestoreParams object with Default Values on missing fields
+	**/
+	public static function getRestoreParams(inp:String, outp:String, sng:Bool, fold:Bool, enc:Bool):RestoreParams
+	{
+		var p = new RestoreParams();
+		p.inputFile = inp;
+		p.outputDir = outp;
+		p.flag_forceSingle = sng;
+		p.flag_subfolder = fold;
+		p.flag_encCue = enc;
+		return p;
+	}//---------------------------------------------------;
 
-
-
-
-
-
-
+}// -- end class
 
 //====================================================;
 // TYPES 
