@@ -50,10 +50,11 @@ class FFmpegAudio extends CLIApp
 	public static var VORBIS_QUALITY:Array<Int> = [ 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 500 ];
 
 	// MP3 quality (index), VBR kbps
-	public static var MP3_QUALITY:Array<Int> = [65, 85, 100, 115, 130, 165, 175, 190, 225, 245];
+	public static var MP3_QUALITY:Array<Int> = [65, 85, 100, 115, 130, 165, 175, 190, 225, 245, 245];
 	
 	// OPUS quality (index), VBR kbps
-	public static var OPUS_QUALITY:Array<Int> = [ 32, 48, 64, 80, 96, 112, 128, 160, 320];
+	public static var OPUS_QUALITY:Array<Int> = [ 32, 48, 64, 80, 96, 112, 128, 160, 320, 320, 320];
+	
 	
 	// -- Helpers
 	var secondsConverted:Int;

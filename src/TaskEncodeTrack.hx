@@ -5,6 +5,7 @@ import app.FFmpegAudio;
 import cd.CDTrack;
 import djNode.task.CTask;
 import djNode.tools.FileTool;
+import djNode.utils.CLIApp;
 import js.Node;
 import js.node.Fs;
 import js.node.Path;
@@ -70,6 +71,7 @@ class TaskEncodeTrack extends CTask
 			fail("Could not calculate MD5 of " + sourceTrackFile);
 		}
 		
+		
 		if (track.isData)
 		{
 			var ecm = new EcmTools(CDCRUSH.TOOLS_PATH);
@@ -77,13 +79,15 @@ class TaskEncodeTrack extends CTask
 			ecm.events.once("close", onClose);
 			setupFiles(".bin.ecm"); // sets up working file
 			ecm.ecm(sourceTrackFile, track.workingFile);
+			killExtra = function() { ecm.kill(); }	
 			
 		}else{
 			
 			var ffmp = new FFmpegAudio(CDCRUSH.FFMPEG_PATH);
 			ffmp.events.on("progress", onProgress);
 			ffmp.events.once("close", onClose);	
-			
+			killExtra = function() { ffmp.kill(); }	
+
 			// Audio Quality ::
 			switch(p.audio.id)
 			{
@@ -105,6 +109,7 @@ class TaskEncodeTrack extends CTask
 			}//-
 			
 		}// -- end if
+		
 		
 	}//---------------------------------------------------;
 	

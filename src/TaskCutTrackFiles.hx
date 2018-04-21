@@ -86,6 +86,13 @@ class TaskCutTrackFiles extends CTask
 		};
 		
 		ax.start();
+		
+		killExtra = function()
+		{
+			ax.kill();
+			fc.kill();
+		}
+		
 	}//---------------------------------------------------;
 	
-}
+}// --

@@ -15,11 +15,11 @@ import CDCRUSH.RestoreParams;
 class JobRestore extends CJob
 {
 	// Push out information about the job at this callback
-	public var pushInfos:RestoreParams->Void;
+	// public var pushInfos:RestoreParams->Void;
 	
 	public function new(p:RestoreParams)
 	{
-		super("Restore CD");
+		super("restore");
 		jobData = p;
 	}//---------------------------------------------------;
 	
@@ -42,7 +42,7 @@ class JobRestore extends CJob
 		if (p.flag_subfolder) 
 		{
 			p.outputDir = CDCRUSH.checkCreateUniqueOutput(
-				p.outputDir, Path.parse(p.inputFile).name );
+				p.outputDir, Path.parse(p.inputFile).name + CDCRUSH.RESTORED_FOLDER_SUFFIX);
 		}else
 		{
 			FileTool.createRecursiveDir(p.outputDir);
@@ -63,6 +63,7 @@ class JobRestore extends CJob
 			var arc = new Arc(CDCRUSH.TOOLS_PATH);
 				t.handleCliReport(arc);
 				arc.extractAll(p.inputFile, p.tempDir);
+				t.killExtra = function(){ arc.kill(); }
 
 		}, "Extracting", "Extracting the archive to temp folder"));
 		
@@ -76,8 +77,6 @@ class JobRestore extends CJob
 			var cd = new cd.CDInfos(); jobData.cd = cd;
 			
 			cd.jsonLoad(Path.join(p.tempDir, CDCRUSH.CDCRUSH_SETTINGS));
-			
-			LOG.log( "== Detailed CD INFOS:\n" +  p.cd.getDetailedInfo() );
 			
 			for (track in cd.tracks){
 				addNextAsync(new TaskRestoreTrack(track));
@@ -153,7 +152,6 @@ class JobRestore extends CJob
 							tr.trackFile = p.cd.CD_TITLE + ".bin";
 						else
 							tr.trackFile = null;
-							
 					}
 					
 				}// --
@@ -170,14 +168,16 @@ class JobRestore extends CJob
 		
 			}// -- end for.
 			
-			
 			// --
 			// Create CUE File
-			p.cd.cueSave(Path.join(p.outputDir, p.cd.CD_TITLE + ".cue"), [
+			p.createdCueFile = Path.join(p.outputDir, p.cd.CD_TITLE + ".cue");
+			p.cd.cueSave(p.createdCueFile, [
 				'CDCRUSH (nodejs) version : ' + CDCRUSH.PROGRAM_VERSION,
 				CDCRUSH.LINK_SOURCE
 			]);
 
+			LOG.log( "== Detailed CD INFOS:\n" +  p.cd.getDetailedInfo() );
+			
 			t.complete();
 		
 		}, "Moving, Finalizing"));

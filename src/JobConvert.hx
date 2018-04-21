@@ -1,5 +1,6 @@
 package;
 
+import djNode.task.CJob;
 import app.Arc;
 import cd.CDInfos;
 import djNode.task.CJob;
@@ -10,22 +11,17 @@ import js.node.Fs;
 import js.node.Path;
 import CDCRUSH.CrushParams;
 
-
-
 /**
- * A collection of tasks, that will CRUSH a cd,
+ * A collection of tasks, that will Convert a cd from cue/bin to encoded audio/cue
  * ...
- * 
  */
-class JobCrush extends CJob 
+class JobConvert extends CJob 
 {
-	// Push out information about the job at this callback
-	// public var pushInfos:CrushParams->Void;
-	
+
 	// --
 	public function new(p:CrushParams)
 	{
-		super("crush");
+		super("convert");
 		jobData = p;
 	}//---------------------------------------------------;
 	
@@ -46,11 +42,14 @@ class JobCrush extends CJob
 			p.outputDir = Path.dirname(p.inputFile);
 		}
 		
-		FileTool.createRecursiveDir(p.outputDir);
+		p.outputDir = CDCRUSH.checkCreateUniqueOutput(
+				p.outputDir, Path.parse(p.inputFile).name + CDCRUSH.RESTORED_FOLDER_SUFFIX);
+				
 		FileTool.createRecursiveDir(p.tempDir);
 		
 		// --
-		p.flag_convert_only = false;
+		p.flag_convert_only = true;
+		
 		
 		// --- START ADDING JOBS : ----
 		
@@ -61,23 +60,17 @@ class JobCrush extends CJob
 			
 			cd.cueLoad(p.inputFile);
 			
+			if (cd.tracks.length == 1 && cd.tracks[0].isData)
+			{
+				fail("No point in converting. No audio tracks on the cd."); return;
+			}
+			
 			// Meaning the tracks are going to be extracted in the temp folder
 			p.flag_sourceTracksOnTemp = (!cd.MULTIFILE && cd.tracks.length > 1);
 
 			// Real quality to string name
 			cd.CD_AUDIO_QUALITY = CDCRUSH.getAudioQualityString(p.audio);
-
-			// Generate the final arc name now that I have the CD TITLE
-			p.finalArcPath = Path.join(p.outputDir, cd.CD_TITLE + CDCRUSH.CDCRUSH_EXTENSION);
 			
-			while (FileTool.pathExists(p.finalArcPath))
-			{
-				LOG.log(p.finalArcPath + "already exists, adding (_) until unique", 2);
-				p.finalArcPath = p.finalArcPath.substr(0, -4) + "_" + CDCRUSH.CDCRUSH_EXTENSION;
-			}
-			
-			LOG.log("- Destination Archive :" + p.finalArcPath );
-
 			t.complete();		
 					
 		}, "-init", "Reading Cue Data and Preparing"));
@@ -88,66 +81,69 @@ class JobCrush extends CJob
 		add(new TaskCutTrackFiles());
 		
 		
-		// - Encode tracks
+		// - Encode AUDIO tracks only
 		// ---------------------
 		add(new CTask(function(t)
 		{
 			for (t in p.cd.tracks) {
-				addNextAsync(new TaskEncodeTrack(t));
+				if (!t.isData) addNextAsync(new TaskEncodeTrack(t));
 			}
 			t.complete();
 		}, "-Preparing", "Preparing to compress tracks"));
 		
-
-		// Create Archive
-		// Add all tracks to the final archive
-		// ---------------------
-		add(new CTask(function(t) 
-		{
-			var files:Array<String> = [];
-			for (tr in p.cd.tracks) {
-				// Dev note: working file was set earlier on TaskEncodeTrack();
-				files.push(tr.workingFile);
-			}
-			
-			var arc = new Arc(CDCRUSH.TOOLS_PATH);
-				t.handleCliReport(arc);
-				arc.compress(files, p.finalArcPath, p.compressionLevel);
-				t.killExtra = function(){ arc.kill(); }
-				
-
-		}, "Compressing", "Compressing everything into an archive"));
-
-		
-		// - Create CD SETTINGS and push it to the final archive
-		// ( I am appending these files so that they can be quickly loaded later )
+	
+		// - Create new CUE file
 		// --------------------
 		add(new CTask(function(t)
 		{
-			var path_settings = Path.join(p.tempDir, CDCRUSH.CDCRUSH_SETTINGS);
-
-			p.cd.jsonSave(path_settings);
 			
-			var arc = new Arc(CDCRUSH.TOOLS_PATH);
-				t.handleCliReport(arc);
-				arc.appendFiles([path_settings], p.finalArcPath);
-				t.killExtra = function(){ arc.kill(); }
-
-		}, "Finalizing", "Appending settings into the archive"));
-		
-		
-		// - Get post data
-		add(new CTask(function(t)
-		{
-			p.crushedSize = Std.int(Fs.statSync(p.finalArcPath).size);
+			var stepProgress:Int = Math.ceil(100.0 / p.cd.tracks.length);
+			
+			for (tr in p.cd.tracks)
+			{
+				if (!p.cd.MULTIFILE)
+				{
+					// Fix the index times to start with 00:00:00
+					tr.rewriteIndexes_forMultiFile();
+				}
+				
+				var ext = Path.extname(tr.workingFile);
+				tr.trackFile = '${p.cd.CD_TITLE} (track ${tr.trackNo})$ext';
+				
+				// Data track was not cut or encoded.
+				// It's in the input folder, don't move it
+				if(tr.isData && p.cd.MULTIFILE)
+				{
+					FileTool.copyFile(tr.workingFile, Path.join(p.outputDir, tr.trackFile));
+				}else{
+					// Note: TaskCompress already put the audio files on the output folder
+					// Renames files to proper filename : 
+					// Either on same folder or on temp folder
+					FileTool.moveFile(tr.workingFile, Path.join(p.outputDir, tr.trackFile));
+				}
+				
+				t.PROGRESS += stepProgress;
+				
+			}//- end for
+			
+			p.convertedCuePath = Path.join(p.outputDir, p.cd.CD_TITLE + ".cue");
+			
+			//-- Create the new CUE file
+			p.cd.cueSave(p.convertedCuePath, [
+				'CDCRUSH (nodejs) version : ' + CDCRUSH.PROGRAM_VERSION,
+				CDCRUSH.LINK_SOURCE
+			]);
+			
+			
 			LOG.log( "== Detailed CD INFOS:\n" +  p.cd.getDetailedInfo() );
+			
 			t.complete();
-
-		}, "-Finalizing"));
+			
+		}, "Finalizing"));
 		
 		// --
 		
-		LOG.log('= COMPRESSING A CD with the following parameters :');
+		LOG.log('= CONVERTING A CD with the following parameters :');
 		LOG.log('- Input : ' + p.inputFile);
 		LOG.log('- Output Dir : ' + p.outputDir);
 		LOG.log('- Temp Dir : ' + p.tempDir);

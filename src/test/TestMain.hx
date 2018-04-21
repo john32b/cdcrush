@@ -1,11 +1,13 @@
 package test;
 
+import cd.CDInfos;
 import djNode.BaseApp;
 import djNode.task.CJob;
 import djNode.task.CTestTask;
 import djNode.tools.FileTool;
 import djNode.tools.LOG;
 import djNode.utils.CJobReport;
+import js.Error;
 import js.Node;
 import js.node.Fs;
 import js.node.Path;
@@ -25,7 +27,7 @@ class TestMain extends BaseApp
 	{
 		LOG.setLogFile("a:\\LOG.txt", true);
 		//--
-		PROGRAM_INFO.name = CDCRUSH.PROGRAM_NAME;
+		PROGRAM_INFO.name = "TESTS FOR " + CDCRUSH.PROGRAM_NAME;
 		PROGRAM_INFO.version = CDCRUSH.PROGRAM_VERSION;
 		PROGRAM_INFO.desc = CDCRUSH.PROGRAM_SHORT_DESC;
 		PROGRAM_INFO.executable = "cdcrush";
@@ -34,39 +36,34 @@ class TestMain extends BaseApp
 		
 		// <Actions>
 		ARGS.requireAction = true;
-		ARGS.Actions.push(['c', 'crush', 'Crush a CD image file', "cue"]);
-		ARGS.Actions.push(['r', 'restore', 'Restore a crushed image', "arc"]);
-		
-		// <Options>
-		ARGS.Options.push(['-folder',  'Folder','Restore to a subfolder named after the CD title']);
-		ARGS.Options.push(['-enc', 'Encoded Audio/Cue','Restore/Convert to encoded audio files/.cue\nCan be used by crush and restore operations.']);
-		ARGS.Options.push(['-single',  'Force Single Bin','Restore to a single .bin/.cue ']);
-		ARGS.Options.push(['-temp', 'Temp Folder', 'Set a custom temp folder for operations', 'yes']);
-		ARGS.Options.push(['-log', 'Log File', 'Produce a log file to a path.(e.g. -log c:\\log.txt)', 'yes']);
-		ARGS.Options.push(['-ac', 'Audio Codec', 'Select an audio codec for encoding audio tracks\n' +
-				"'flac','opus','vorbis','mp3'", 'yes']);
-		ARGS.Options.push(['-aq', 'Audio Quality', 'Select an audio quality for the audio codec\n' +
-				"0:lowest, 10:highest (Ignored in FLAC)", 'yes']);
-		ARGS.Options.push(['-cl', "Compression Level", 
-				"FreeArc compression Level,\n0:Fastest, 4:Default, 9:Highest(not recommended)", "yes"]);
-				
+		ARGS.Actions.push(['t1', 'Test cdcrush', 'Some CDCRUSH engine tests']);
+
 		super.init();
+		
 	}//---------------------------------------------------;
 	
 	override function onStart() 
 	{
 		super.onStart();
+
+		CDInfos.LOG = function(s){ LOG.log(s);};
 		
-		var p = new CDCRUSH.CrushParams();
-		p.inputFile = argsInput[0];
-		p.audio = {id:'flac', quality:0};
-		p.compressionLevel = 3;
-		var j = getJobCrush(p);
-		
-		var report = new CJobReport(j, false, true);
-		
-		activeJob = j;
-		j.start();
+		switch(argsAction)
+		{
+			case "t1": testCDCRUSH();
+			default:
+		}
+	
+		//var p = new CDCRUSH.CrushParams();
+		//p.inputFile = argsInput[0];
+		//p.audio = {id:'flac', quality:0};
+		//p.compressionLevel = 3;
+		//var j = getJobCrush(p);
+		//
+		//var report = new CJobReport(j, false, true);
+		//
+		//activeJob = j;
+		//j.start();
 	}//---------------------------------------------------;
 	
 	//====================================================;
@@ -83,20 +80,18 @@ class TestMain extends BaseApp
 		
 		var testBins = "../../tests/";
 		
-		/** Old Version Load test:
-		 * 
-			var cd = new CDInfos();
+		///** Old Version Load test:
+			var cd = new cd.CDInfos();
 			trace("Loading JSON Version 1 ---");
 			cd.jsonLoad(Path.join(testBins, "V1.json"));
 			trace("Loading JSON Version 2 ---");
 			cd.jsonLoad(Path.join(testBins, "V2.json"));
 			trace("Loading JSON Version 3 ---");
 			cd.jsonLoad(Path.join(testBins, "V3.json"));
-			
-			-- ok --
-		*/	
 		
-		// ----------------------;
+		// == CDCRUSH FUNCTIONS --
+		// --------------------------
+		
 		
 		var writableTemp = Path.join(FLD_01 , "//_cdcrush_tests");
 		
@@ -131,6 +126,13 @@ class TestMain extends BaseApp
 		trace(CDCRUSH.getAudioQualityString({id:"vorbis", quality:3}));
 		trace(CDCRUSH.getAudioQualityString({id:"opus", quality:3}));
 		trace(CDCRUSH.getAudioQualityString({id:"mp3", quality:3}));
+		
+		try{
+			trace(CDCRUSH.getAudioQualityString({id:"other", quality:3}));
+		}catch (_){
+			trace(" >> OK");
+		}
+		
 		trace(">> OK");
 		//--
 		
@@ -208,7 +210,7 @@ class TestMain extends BaseApp
 
 	override function onExit() 
 	{
-		if (activeJob != null) activeJob.kill();
+		if (activeJob != null) activeJob.forceKill();
 		super.onExit();
 	}
 	

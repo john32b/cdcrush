@@ -4,6 +4,6 @@
 -lib djnode
 -cp src
 -main Main
--js bin/app.js
+-js bin/cdcrush.js
 -D terminal
 -D windows

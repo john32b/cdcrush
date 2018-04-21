@@ -223,7 +223,7 @@ class CDCRUSH
 	}//---------------------------------------------------;
 	
 	/**
-	   Check if file EXISTS and is of VALID EXTENSION 
+	   Check if file EXISTS and is of VALID EXTENSION
 	   ~Throws Errors
 	   @param ext Extension WITH "."
 	**/
@@ -242,6 +242,7 @@ class CDCRUSH
 	}//---------------------------------------------------;
 
 	// --
+	// Get a unique named temp folder ( inside the main temp folder )
 	public static function getSubTempDir():String
 	{
 		return Path.join(TEMP_FOLDER , StrTool.getGUID().substr(0, 12));
@@ -260,13 +261,13 @@ class CDCRUSH
 		if (cl == null) cl = DEFAULT_ARC_LEVEL;
 		
 		var p = new CrushParams();
-		p.inputFile = inp;
-		p.outputDir = outp;
-		p.compressionLevel = cl;
-		p.audio =  {
-			id:ac,
-			quality:aq
-		};
+			p.inputFile = inp;
+			p.outputDir = outp;
+			p.compressionLevel = cl;
+			p.audio = {
+				id:ac,
+				quality:aq
+			};
 		return p;
 	}//---------------------------------------------------;
 	
@@ -276,11 +277,12 @@ class CDCRUSH
 	public static function getRestoreParams(inp:String, outp:String, sng:Bool, fold:Bool, enc:Bool):RestoreParams
 	{
 		var p = new RestoreParams();
-		p.inputFile = inp;
-		p.outputDir = outp;
-		p.flag_forceSingle = sng;
-		p.flag_subfolder = fold;
-		p.flag_encCue = enc;
+			p.inputFile = inp;
+			p.outputDir = outp;
+			p.flag_forceSingle = sng;
+			p.flag_subfolder = fold;
+			p.flag_encCue = enc;
+			
 		return p;
 	}//---------------------------------------------------;
 
@@ -334,6 +336,9 @@ class CrushParams
 	// USED in `JobConvertCue`
 	public var flag_convert_only:Bool;
 	
+	// Used for reporting back to user
+	public var convertedCuePath:String;
+	
 }// --
 
 
@@ -371,5 +376,8 @@ class RestoreParams
 	public var tempDir:String;
 	// Keeps the current job CDINfo object
 	public var cd:CDInfos;
+	
+	// Used for reporting back to user
+	public var createdCueFile:String;
 	
 }// --

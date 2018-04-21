@@ -333,8 +333,8 @@ class CDInfos
 		
 		if (versionLoaded == 2) // Convert V2 to V3
 		{
-			var diskFiles:Int = 0;			// Count tracks with diskfiles set
-			var anyAudio:Bool = false;		// Is there any audio track? Used to fill the CD_QUALITY
+			var diskFiles:Int = 0;				// Count tracks with diskfiles set
+			var capturedAudio:String = "";		// Is there any audio track? Used to fill the CD_QUALITY
 			var dt:String = null;
 			for (i in TR){
 				i.trackType = i.type;
@@ -344,17 +344,28 @@ class CDInfos
 				i.md5 = "-";
 				if (dt == null && i.trackType != "AUDIO") dt = i.trackType; // If any track is data, then this is the CD TYPE
 				if (i.diskFile != null) diskFiles++;
-				anyAudio = (!anyAudio && i.trackType == "AUDIO");
+				if (capturedAudio == null && i.trackType == "AUDIO") {
+					capturedAudio = Path.extension(i.filename); // "ogg","flac"
+				}
+			}//- for tracks
+			
+			if (capturedAudio != null)
+			{
+				if (capturedAudio == "ogg") obj.audio = "Ogg Vorbis ??? k Vbr";
+				if (capturedAudio == "flac") obj.audio = "FLAC Lossless";
+				
+			}else
+			{
+				obj.audio = null;
 			}
-			obj.audio = anyAudio ? "?" : null; // All tracks encoded with past vers were FLAC or VORBIS
-			/// TODO, capture FLAC or VORBIS based on filename
+			
 			obj.totalSize = obj.imageSize;
 			obj.multiFile = (diskFiles > 1) && (diskFiles == TR.length);
 			obj.cdType = (dt == null) ? "AUDIO" : dt;
 			versionLoaded++;
 		}
 		
-		if (versionLoaded == 3)// Convert V3 to V4
+		if (versionLoaded == 3) // Convert V3 to V4
 		{
 			for (i in TR)
 			{

@@ -59,7 +59,7 @@ class TaskRestoreTrack extends CTask
 				ecm.events.on("progress", onProgress);
 				ecm.events.once("close", onClose);
 				ecm.unecm(crushedTrackPath, track.workingFile);
-			
+				killExtra = function() { ecm.kill(); }	
 		}else{
 			// No need to convert back
 			if (p.flag_encCue)
@@ -75,6 +75,7 @@ class TaskRestoreTrack extends CTask
 				ffmp.events.on("progress", onProgress);
 				ffmp.events.once("close", onClose);
 				ffmp.audioToPCM(crushedTrackPath, track.workingFile);
+				killExtra = function() { ffmp.kill(); }	
 		}
 		
 	}//---------------------------------------------------;
