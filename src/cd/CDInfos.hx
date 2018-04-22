@@ -384,7 +384,8 @@ class CDInfos
 		
 		// -- Create Tracks ::
 		tracks = [];
-		for (i in TR) {
+		for (i in TR) 
+		{
 			var t = new CDTrack();
 			t.fromJSON(i);
 			tracks.push(t);

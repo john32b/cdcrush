@@ -131,7 +131,7 @@ class CDCRUSH
 	
 	public static function setThreads(t:Int)
 	{
-		if (t > 8) t = 8 else if (t < 0) t = 0;
+		if (t > 8) t = 8 else if (t < 1) t = 1;
 		MAX_TASKS = t;
 		LOG.log("== MAX_TASKS = " + MAX_TASKS);
 	}//---------------------------------------------------;
@@ -259,6 +259,9 @@ class CDCRUSH
 		if (ac == null) ac = DEFAULT_AUDIO_C;
 		if (aq == null) aq = DEFAULT_AUDIO_Q;
 		if (cl == null) cl = DEFAULT_ARC_LEVEL;
+		
+		// This is the only place to sanitize compression level
+		if (cl < 0) cl = 0; else if 
 		
 		var p = new CrushParams();
 			p.inputFile = inp;
