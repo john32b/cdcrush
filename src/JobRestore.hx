@@ -169,7 +169,7 @@ class JobRestore extends CJob
 			}// -- end for.
 			
 			// --
-			// Create CUE File
+			//-- Create the new CUE file
 			p.createdCueFile = Path.join(p.outputDir, p.cd.CD_TITLE + ".cue");
 			p.cd.cueSave(p.createdCueFile, [
 				'CDCRUSH (nodejs) version : ' + CDCRUSH.PROGRAM_VERSION,

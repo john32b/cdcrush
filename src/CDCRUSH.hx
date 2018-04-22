@@ -261,7 +261,7 @@ class CDCRUSH
 		if (cl == null) cl = DEFAULT_ARC_LEVEL;
 		
 		// This is the only place to sanitize compression level
-		if (cl < 0) cl = 0; else if 
+		if (cl < 0) cl = 0; else if(cl>9) cl=9;
 		
 		var p = new CrushParams();
 			p.inputFile = inp;

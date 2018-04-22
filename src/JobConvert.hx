@@ -126,9 +126,9 @@ class JobConvert extends CJob
 				
 			}//- end for
 			
-			p.convertedCuePath = Path.join(p.outputDir, p.cd.CD_TITLE + ".cue");
 			
 			//-- Create the new CUE file
+			p.convertedCuePath = Path.join(p.outputDir, p.cd.CD_TITLE + ".cue");
 			p.cd.cueSave(p.convertedCuePath, [
 				'CDCRUSH (nodejs) version : ' + CDCRUSH.PROGRAM_VERSION,
 				CDCRUSH.LINK_SOURCE

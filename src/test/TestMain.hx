@@ -1,5 +1,6 @@
 package test;
 
+import app.Arc;
 import cd.CDInfos;
 import djNode.BaseApp;
 import djNode.task.CJob;
@@ -20,7 +21,9 @@ class TestMain extends BaseApp
 {
 
 	// Test Folder, Writable folder for some tests
-	static var FLD_01:String = "a:\\";
+	var FLD_01:String = "a:\\";
+	
+	var quickExit:Void->Void = null;
 	
 	// --
 	override function init() 
@@ -37,7 +40,7 @@ class TestMain extends BaseApp
 		// <Actions>
 		ARGS.requireAction = true;
 		ARGS.Actions.push(['t1', 'Test cdcrush', 'Some CDCRUSH engine tests']);
-
+		ARGS.Actions.push(['arc', 'Test ARC', 'Compresses all input files to output file (must be arc)']);
 		super.init();
 		
 	}//---------------------------------------------------;
@@ -51,6 +54,7 @@ class TestMain extends BaseApp
 		switch(argsAction)
 		{
 			case "t1": testCDCRUSH();
+			case "arc" : testArc();	// This is a one time test to test a big on the Arc.hx
 			default:
 		}
 	
@@ -70,8 +74,26 @@ class TestMain extends BaseApp
 	// TESTS 
 	//====================================================;
 	
+	
+	function testArc()
+	{
+		trace("Compressing", argsInput);
+		trace("Into", argsOutput);
+		var arc = new Arc("../tools/");
+			arc.events.on("progress", function(t){
+				trace("ARC PROGRESS GOT " , t);
+			});
+			arc.compress(argsInput, argsOutput, 5);
+			quickExit  = function(){
+				if (arc != null) {
+					arc.kill();
+				}
+			}
+	}//---------------------------------------------------;
+	
+	
 	// @param tempFolder : A temporary folder for operations (ROOT) a subfolder will be created
-	public static function testCDCRUSH()
+	function testCDCRUSH()
 	{
 		trace('== CDRUSH UNIT TESTS ==');
 		trace('-----------------------');
@@ -129,7 +151,7 @@ class TestMain extends BaseApp
 		
 		try{
 			trace(CDCRUSH.getAudioQualityString({id:"other", quality:3}));
-		}catch (_){
+		}catch (d:Dynamic){
 			trace(" >> OK");
 		}
 		
@@ -211,8 +233,9 @@ class TestMain extends BaseApp
 	override function onExit() 
 	{
 		if (activeJob != null) activeJob.forceKill();
+		if (quickExit != null) quickExit();
 		super.onExit();
-	}
+	}//---------------------------------------------------;
 	
 	// --
 	static function main()  {

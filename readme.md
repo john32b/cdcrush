@@ -2,17 +2,20 @@
 # CDCRUSH nodeJS
 
 **Name**: cdcrush, *Highy compress cd-image games*\
-**Author:** John Dimi, <johndimi@outlook.com> *twitter*: [@jondmt](https://twitter.com/jondmt)\
-**Project Page and Sources:** [https://github.com/johndimi/cdcrush.net](https://github.com/johndimi/cdcrush.net)\
+**Author:** John Dimi :computer:, <johndimi@outlook.com> *twitter*: [@jondmt](https://twitter.com/jondmt)\
+**Project Page and Sources:** [https://github.com/johndimi/cdcrush](https://github.com/johndimi/cdcrush.net)\
 **Language:** HAXE compiled to nodeJS, **Licence:** MIT\
 **Version:** 1.4 **Platform:** Windows
+**Sister Project**: [cdcrush.net](https://github.com/johndimi/cdcrush.net)
 
 
-## What is it
+## :mega: What is it
 
 ![CDCRUSH LOGO](images/logo.png)
 
 **cdcrush** is a tool that can highly compress **CD based games** *( playstation 1, Pc-engine, etc )* for storage / sharing purposes. **ALSO** it can encode the audio tracks of a CD and create a `.cue` file with *(mp3/ogg/flac)* tracks for use in emulators.
+
+![Crushing a CD demo](images/crush_demo.gif)
 
 **⇒ How does it compress/crush a CD :** 
 
@@ -28,6 +31,8 @@
 
 **NOTE**: Archives with the audio tracks encoded with **FLAC**, will be restored to a 1:1 copy, byte for byte, of the original source CD
  
+ ![Restoring a CD demo](images/restore_demo.gif)
+ 
 ### Some examples of game sizes archived with 7zip and cdcrush:
 
 | Title             |  Raw    | 7z      | cdcrush-ogg|  cdcrush-flac |
@@ -41,25 +46,30 @@
 <sup>7zip maximum compression default template</sup>
 
 
-## General Info
+## :paperclip: General Info
 - **cdcrush** is only compatible with `.cue/.bin` type CD images. Some programs that allow you to rip your CDs to this format are:
   - [cdrtfe](https://cdrtfe.sourceforge.io/cdrtfe/index_en.html), open source
-  - [ImgBurn](http://imgburn.com) ,free but not open source.
+  - [ImgBurn](http://imgburn.com), free but not open source.
 - This is a **CLI** application. Some basic CLI knowledge is required. 
 - There is also a [dotNet version of cdcrush](https://github.com/johndimi/cdcrush.net) it's simpler to use, but it doesn't support batch operations.
+- Compressing a CD with **cdcrush** produces an archive file with the `.arc` extension. This is the same extension the archiver *freearc* uses.
 
-## INSTALLING CDCRUSH
+## :large_blue_diamond: Installing cdcrush
 
 1. Get [nodeJS](https://nodejs.org/en/) (version 8+) and make sure **npm** is also installed *(NodeJs installer should install npm)*
-2. On a Terminal type : `npm install -g cdcrush` This will install cdcursh globally and you can use it from anywhere on a Terminal.
-3. Get and Install [ffmpeg](http://ffmpeg.org/). It is a free and open source program required to encode audio tracks.
+2. On a terminal type : `npm install -g cdcrush`\
+This will install cdcursh globally and you can use it from anywhere.
+3. Get and Install [ffmpeg](http://ffmpeg.org/). It is a free and open source program required to encode audio tracks.\
 :warning: **FFmpeg NEEDS to be set on PATH** . The easiest way to do this is to copy `ffmpeg.exe` into your `c:\windows` folder. 
 4. That's it. **cdcrush** is ready to go.
 
+![cdcrush called with no arguments](images/init_screen.png)
+<sup> Calling cdcrush alone doesn't do much, you need to define some arguments</sup>
 
-## RUNNING CDCRUSH,  PROGRAM ARGUMENTS
 
-After installing **cdcrush** with npm, you can run it from anywhere in a Terminal by typing\
+## :vertical_traffic_light: Running, Program arguments
+
+After installing **cdcrush** with npm, you can run it from anywhere in a terminal by typing\
 **`cdcrush`**
 
 The basic format of arguments is:\
@@ -69,7 +79,7 @@ The basic format of arguments is:\
 
 ### :file_folder: Input / Output
 
-- **Input Files** ⇒ You can use `.cue` or `.arc` files. Wildcards are supported. `*.cue, *.*`
+- **Input Files** ⇒ You can use `.cue` or `.arc` files. Wildcards are supported. `*.cue, *.*`\
 - **Output Dir** ⇒ Set with `-o` followed by `output dir`\
 Setting an output directory is **optional**. If you skip it, it will automatically be set to the same folder as the **input file**.\
 - **Examples**\
@@ -109,9 +119,9 @@ Works in **RESTORE** only. Will produce a **SINGLE** .bin file even if the sourc
 :warning: if you don't set an audio codec it defaults to `flac`
 Codec IDs:
   - `flac` : Flac Lossless. Using this, you can store a 1:1 lossless copy of the entire CD
-  - `opus` : Opus Ogg codec with vbr^\*^, is an advanced codec and can produce really nice quality audio even at low bitrates.
-  - `vorbis`: Vorbis Ogg codec with vbr^\*^ , slightly inferior to Opus, but it is compatible with emulators running CUE files with Vorbis encoded audio.
-  - `mp3` : MP3 with vbr^\*^ , is not recommended but it's there.
+  - `opus` : Opus Ogg codec with vbr\*, is an advanced codec and can produce really nice quality audio even at low bitrates.
+  - `vorbis`: Vorbis Ogg codec with vbr\* , slightly inferior to Opus, but it is compatible with emulators running CUE files with Vorbis encoded audio.
+  - `mp3` : MP3 with vbr\* , is not recommended but it's there.\
 <sup>vbr = variable bit rate</sup>
 
 - **Audio Quality** ⇒ set with `-aq` followed by a number `0-10`. \
@@ -121,7 +131,7 @@ Codec IDs:
 - **Compression Level** ⇒ set with `-cl` followed by a number `0-9`.\
 Sets the compression level of the final archive on the **crush** operations. \
 `0` is the fastest but offers minimum compression
-`9` offers the best compression, but requires a **:bomb: HUGE AMOUNT OF RAM ** for both compressing and decompression.  *(don't ever use)*
+`9` offers the best compression, but requires a **:bomb: HUGE AMOUNT OF RAM** for both compressing and decompression.  *(don't ever use)*
 :pushpin: The **default value** is `4` which offers a good compression ratio vs memory usage and time required.
 
 - **Temp Folder** ⇒ set with `-temp` followed by a `path`\
@@ -143,10 +153,11 @@ Just use the option `-enc` with the **crush** or **restore** action. *(For when 
 ![Convert to encoded audio/cue Example](images/convert_example.png)
 <sup>Example of what this operation does.</sup>
 
-
 ## :exclamation: CHANGELOG
 See [`CHANGELOG.MD`](CHANGELOG.MD)
 
+## :hammer: BUILDING
+See [`BUILDING.MD`](BUILDING.MD)
 
 ## :clipboard: Q&A
 
@@ -163,11 +174,11 @@ See [`CHANGELOG.MD`](CHANGELOG.MD)
 **A**: YES, to the last byte. The filesize and checksums of the restored tracks are the same as the original ones. (data&audio). You can check for yourself by calculating the checksums of restored files vs original source. 
 
 
-## dotNET Version
+## :stars: dotNET Version
 
-Checkout the  [dotNet version](https://github.com/johndimi/cdcrush.net) it's simpler to use, but it doesn't support batch operations.
+Checkout the  [dotNet version](https://github.com/johndimi/cdcrush.net), it's simpler to use, but it doesn't support batch operations. *Windows Only*
 
-## About
+## :triangular_flag_on_post: About
 
 Feel free to provide feedback and contact me on social media and email. Donations are always welcome! :smile:
 

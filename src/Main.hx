@@ -124,11 +124,10 @@ class Main extends BaseApp
 		// -- Print Post
 		if (success)
 		{
-			var p:CDCRUSH.CrushParams = job.jobData;
-			
 			// Extra info
 			if (job.name == "crush")
 			{
+				var p:CDCRUSH.CrushParams = job.jobData;
 				H2('Created', p.finalArcPath);
 				H2('Original size', StrTool.bytesToMBStr(p.cd.CD_TOTAL_SIZE) + "Mb");
 				H2('Crushed size', StrTool.bytesToMBStr(p.crushedSize) + "Mb");
@@ -136,12 +135,14 @@ class Main extends BaseApp
 			}else
 			if (job.name == "convert")
 			{
+				var p:CDCRUSH.CrushParams = job.jobData;
 				H2('Created',p.convertedCuePath + " + tracks");
 				T.printf('~green~- Converted OK~!~\n');
 			}else
 			if (job.name == "restore")
 			{
-				H2('Created', p.convertedCuePath + " + .bins");
+				var p:CDCRUSH.RestoreParams = job.jobData;
+				H2('Created', p.createdCueFile + " + .bins");
 				T.printf('~green~- Restored OK~!~\n');
 			}
 			

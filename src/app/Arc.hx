@@ -144,7 +144,7 @@ class Arc extends CLIApp
 
 
 	/**
-	 * Call this after the process has been created.
+	 * Call this BEFORE the process has been created.
 	 */
 	private function listen_progress():Void
 	{	
