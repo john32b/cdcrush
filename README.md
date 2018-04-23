@@ -154,10 +154,10 @@ Just use the option `-enc` with the **crush** or **restore** action. *(For when 
 <sup>Example of what this operation does.</sup>
 
 ## :exclamation: CHANGELOG
-See [`CHANGELOG.MD`](CHANGELOG.MD)
+See [`CHANGELOG.MD`](CHANGELOG.md)
 
 ## :hammer: BUILDING
-See [`BUILDING.MD`](BUILDING.MD)
+See [`BUILDING.MD`](BUILDING.md)
 
 ## :clipboard: Q&A
 
