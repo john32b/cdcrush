@@ -60,9 +60,8 @@ class CDCRUSH
 	public static inline var TEMP_FOLDER_NAME = "CDCRUSH_361C4202-25A3-4F09-A690";
 	
 	
-	public static inline var DEFAULT_AUDIO_C = "vorbis";
+	public static inline var DEFAULT_AUDIO_C = "flac";
 	public static inline var DEFAULT_AUDIO_Q = 3;
-	
 	public static inline var DEFAULT_ARC_LEVEL = 4;
 	
 	
@@ -71,7 +70,7 @@ class CDCRUSH
 	public static var FLAG_KEEP_TEMP:Bool = false;
 	
 	// Maximum concurrent tasks in CJobs
-	public static var MAX_TASKS:Int = 2;
+	public static var MAX_TASKS:Int = 3;
 	
 	// Is FFMPEG ready to go?
 	public static var FFMPEG_OK(default, null):Bool;
@@ -114,11 +113,12 @@ class CDCRUSH
 		
 		//
 		#if debug
-			TOOLS_PATH = "../tools/";
+			TOOLS_PATH = "../tools/";		// When running from source/bin/
 			FFMPEG_PATH = "";
 		#else
-			TOOLS_PATH = "tools";
-			FFMPEG_PATH = "";
+			// Same folder as the main .js script :
+			TOOLS_PATH = Path.dirname(Node.process.argv[1]);	
+			FFMPEG_PATH = "";		
 		#end
 		
 		CDInfos.LOG = function(l){ LOG.log(l); }	

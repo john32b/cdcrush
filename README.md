@@ -63,7 +63,7 @@ This will install cdcursh globally and you can use it from anywhere.
 :warning: **FFmpeg NEEDS to be set on PATH** . The easiest way to do this is to copy `ffmpeg.exe` into your `c:\windows` folder. 
 4. That's it. **cdcrush** is ready to go.
 
-![cdcrush called with no arguments](images/init_screen.png)
+![cdcrush called with no arguments](images/init_screen.png)\
 <sup> Calling cdcrush alone doesn't do much, you need to define some arguments</sup>
 
 
@@ -79,12 +79,12 @@ The basic format of arguments is:\
 
 ### :file_folder: Input / Output
 
-- **Input Files** ⇒ You can use `.cue` or `.arc` files. Wildcards are supported. `*.cue, *.*`\
+- **Input Files** ⇒ You can use `.cue` or `.arc` files. Wildcards are supported. `*.cue, *.*`
 - **Output Dir** ⇒ Set with `-o` followed by `output dir`\
-Setting an output directory is **optional**. If you skip it, it will automatically be set to the same folder as the **input file**.\
+Setting an output directory is **optional**. If you skip it, it will automatically be set to the same folder as the **input file**.
 - **Examples**\
-`cdcrush *.arc -o c:\games\`  *To restore multiple files on same folder as input file*\
-`cdcrush game1.arc game2.arc -o c:\games\`*To restore selected files into c:\games*
+`cdcrush *.arc -o c:\games`  *To restore multiple files on same folder as input file*\
+`cdcrush game1.arc game2.arc -o c:\games`*To restore selected files into c:\games*
 
 ### :green_book: ACTIONS 
 You can only set **one** action at a time :
@@ -140,7 +140,7 @@ Sets the temp folder for use in operations. **It defaults** to the OS default `%
 - **Max Threads** ⇒ set with `-threads` followed by a number `1-8`\
 Set the maximum number of concurrent processes for encoding tracks. **Defaults to 2** Don't set this bigger than the number of logical cores you  have.
 
-- **Log File** ⇒ set with `-log`followed by a `file` (*the file will be created*)\
+- **Log File** ⇒ set with `-log` followed by a `file` (*the file will be created*)\
 Will log everything to that file, updating it in real time. Also you can see the checksums of the tracks in that log file. **Defaults to no log file**
 
 

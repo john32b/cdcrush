@@ -7,7 +7,9 @@ import djNode.task.CJob;
 import djNode.task.CTestTask;
 import djNode.tools.FileTool;
 import djNode.tools.LOG;
+import djNode.utils.ActionInfo;
 import djNode.utils.CJobReport;
+import djNode.utils.CLIApp;
 import js.Error;
 import js.Node;
 import js.node.Fs;
@@ -40,6 +42,7 @@ class TestMain extends BaseApp
 		// <Actions>
 		ARGS.requireAction = true;
 		ARGS.Actions.push(['t1', 'Test cdcrush', 'Some CDCRUSH engine tests']);
+		ARGS.Actions.push(['t2', 'Test execulatbles']);
 		ARGS.Actions.push(['arc', 'Test ARC', 'Compresses all input files to output file (must be arc)']);
 		super.init();
 		
@@ -55,24 +58,31 @@ class TestMain extends BaseApp
 		{
 			case "t1": testCDCRUSH();
 			case "arc" : testArc();	// This is a one time test to test a big on the Arc.hx
+			case "t2": testExecutables();
 			default:
 		}
-	
-		//var p = new CDCRUSH.CrushParams();
-		//p.inputFile = argsInput[0];
-		//p.audio = {id:'flac', quality:0};
-		//p.compressionLevel = 3;
-		//var j = getJobCrush(p);
-		//
-		//var report = new CJobReport(j, false, true);
-		//
-		//activeJob = j;
-		//j.start();
 	}//---------------------------------------------------;
 	
 	//====================================================;
 	// TESTS 
 	//====================================================;
+	
+	
+	// --
+	function testExecutables()
+	{
+		// Checks at same dir
+		var a = new ActionInfo();
+		a.actionStart("Testing FFMPEG");
+		a.actionEnd(CLIApp.checkRun("ffmpeg.exe -L"));
+		a.actionStart("Testing ECM");
+		a.actionEnd(CLIApp.checkRun("ecm.exe"));	
+		a.actionStart("Testing UNECM");
+		a.actionEnd(CLIApp.checkRun("unecm.exe"));
+		a.actionStart("Testing ARC");
+		a.actionEnd(CLIApp.checkRun("arc.exe"));
+		
+	}//---------------------------------------------------;
 	
 	
 	function testArc()

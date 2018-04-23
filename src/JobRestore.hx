@@ -65,7 +65,7 @@ class JobRestore extends CJob
 				arc.extractAll(p.inputFile, p.tempDir);
 				t.killExtra = function(){ arc.kill(); }
 
-		}, "Extracting", "Extracting the archive to temp folder"));
+		}, "Extracting", "Extracting archive to temp folder"));
 		
 		
 		//  - Read JSON data

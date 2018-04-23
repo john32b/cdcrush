@@ -18,6 +18,7 @@
  * 
  * 	! ALL operations Overwrite generated files
  *  ! ALL operations Input files are not checked
+ *  ! To check if ffmpeg.exe exists use `ffmpeg -L`
  * 
  * @events: 
  * 			`close` 	: ExitOK:<Bool>, ErrorMessage:<String>

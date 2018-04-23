@@ -29,6 +29,7 @@ class Main extends BaseApp
 	// Current active job
 	var job:CJob;
 	
+	// Deco line used as separator in between job infos
 	static inline var LINE_WIDTH:Int = 30;
 	
 	// --
@@ -57,8 +58,9 @@ class Main extends BaseApp
 		ARGS.Options.push(['-ac', 'Audio Codec', 'Select an audio codec for encoding audio tracks\n' +
 							"'flac','opus','vorbis','mp3'", 'yes']);
 		ARGS.Options.push(['-aq', 'Audio Quality', 'Select an audio quality for the audio codec\n' +
-							"0:lowest, 10:highest (Ignored in FLAC)", 'yes']);
-		ARGS.Options.push(['-cl', 'Compression Level', 'FreeArc compression Level,\n0:Fastest, 4:Default, 9:Highest(not recommended)', 'yes']);
+							'0:lowest, 10:highest (Ignored in FLAC)', 'yes']);
+		ARGS.Options.push(['-cl', 'Compression Level', 'FreeArc compression Level,\n' +
+							'0:Fastest, 4:Default, 9:Highest(not recommended)', 'yes']);
 		ARGS.Options.push(['-threads', 'Threads', 'Number of maximum threads allowed for operations (1-8)', 'yes']);
 		ARGS.Options.push(['-temp', 'Temp Folder', 'Set a custom temp folder for operations', 'yes']);
 		ARGS.Options.push(['-log', 'Log File', 'Produce a log file to a path.(e.g. -log c:\\log.txt)', 'yes']);
@@ -74,6 +76,9 @@ class Main extends BaseApp
 	override function onStart() 
 	{
 		printBanner();
+		#if debug
+		T.printf("~red~DEBUG BUILD~!~\n");
+		#end
 		
 		if (argsOptions.log != null)
 		{
@@ -200,9 +205,9 @@ class Main extends BaseApp
 		
 		// --
 		var dd:String = (argsOutput == null?". (same as input file)":argsOutput);
-		H2('Destination', dd);
+		H2('Output Folder :', dd);
 		
-		
+		job.MAX_CONCURRENT = CDCRUSH.MAX_TASKS;
 		job.onComplete = queueJobComplete;
 		job.start();
 	}//---------------------------------------------------;
