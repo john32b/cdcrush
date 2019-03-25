@@ -11,7 +11,7 @@ package cd;
 //  MM is the number of minutes, SS the number of seconds, and FF the number of frames 
 //  (there are seventy five frames to one second). 
 @:keep
-@:public // For when exporing to C#
+@:public // For when exporting to C#
 @:publicFields
 class CDTrack 
 {
@@ -177,8 +177,11 @@ class CDTrack
 	
 	public function fromJSON(o:Dynamic)
 	{
-		for (f in Reflect.fields(o)) {
-			if (Reflect.hasField(this, f)){
+		for (f in Reflect.fields(o)) 
+		{	
+			if (f == "pregap") continue; // MAJOR BUGFIX. C# can't directly cast a JSON object to CueTime
+			
+			if (Reflect.hasField(this, f)) {
 				Reflect.setProperty(this, f, Reflect.field(o, f));
 			}
 		}

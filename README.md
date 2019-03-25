@@ -3,7 +3,7 @@
 
 **Name**: cdcrush, *Highy compress cd-image games*\
 **Author:** John Dimi :computer:, <johndimi@outlook.com> *twitter*: [@jondmt](https://twitter.com/jondmt)\
-**Project Page and Sources:** [https://github.com/johndimi/cdcrush](https://github.com/johndimi/cdcrush.net)\
+**Project Page and Sources:** [https://github.com/johndimi/cdcrush](https://github.com/johndimi/cdcrush)\
 **Language:** HAXE compiled to nodeJS, **Licence:** MIT\
 **Version:** 1.4 **Platform:** Windows
 **Sister Project**: [cdcrush.net](https://github.com/johndimi/cdcrush.net)
@@ -156,8 +156,6 @@ Just use the option `-enc` with the **crush** or **restore** action. *(For when 
 ## :exclamation: CHANGELOG
 See [`CHANGELOG.MD`](CHANGELOG.md)
 
-## :hammer: BUILDING
-See [`BUILDING.MD`](BUILDING.md)
 
 ## :clipboard: Q&A
 

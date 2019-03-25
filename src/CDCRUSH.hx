@@ -115,10 +115,17 @@ class CDCRUSH
 		#if debug
 			TOOLS_PATH = "../tools/";		// When running from source/bin/
 			FFMPEG_PATH = "";
-		#else
+			
+		#else // NPM BUILD ::
+		
 			// Same folder as the main .js script :
 			TOOLS_PATH = Path.dirname(Node.process.argv[1]);	
 			FFMPEG_PATH = "";		
+		#end
+		
+		#if standalone
+			TOOLS_PATH = "tools/";
+			FFMPEG_PATH = "tools/";
 		#end
 		
 		CDInfos.LOG = function(l){ LOG.log(l); }	

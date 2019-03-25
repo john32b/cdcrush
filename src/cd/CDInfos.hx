@@ -12,10 +12,13 @@
  * + Using haxe.sys, so should be compatible with all haxe targets
  * 
  * HELP :
- * http://wiki.hydrogenaud.io/index.php?title=Cue_sheet
+ * - http://wiki.hydrogenaud.io/index.php?title=Cue_sheet
  * 
  * NOTES :
  * + Supports .CUE TITLES
+ * 
+ * FOR C# :
+ * + try catch (haxe.lang.HaxeException) on functions and access ().message
  * 
  */
 
@@ -27,9 +30,9 @@ import sys.FileSystem;
 import sys.io.File;
 import cd.CDTrack.CueTime;
 
-
 @:keep
 @:public // For when exporing to C#
+@:nativeGen // don't generate reflection,
 class CDInfos 
 {
 	// CDInfos Ver.
@@ -38,7 +41,7 @@ class CDInfos
 	// Custom LOG function, set externally
 	public static var LOG:String->Void = function(s){};
 	public static var NEWLINE:String = "\n";	// Can be externally set
-	
+
 	// These are supported when parsing CUE files
 	static var SUPPORTED_TRACK_FILES:Array<String> = ["BINARY", "WAVE"];
 	
@@ -88,7 +91,7 @@ class CDInfos
 	   @Throws String Errors
 	   @param	input
 	**/
-	public function cueLoad(input:String)
+	public function cueLoad(input:String):Void
 	{
 		LOG('cueLoad(): Loading `$input`');
 		
@@ -152,7 +155,7 @@ class CDInfos
 		var cc:Int = 0; // Number of tracks with diskfiles found
 		for (t in tracks)
 		{
-			if (t.indexes.length == 0){
+			if (t.indexes.length == 0) {
 				throw 'Track ${t.trackNo} has no indexes defined';
 			}
 			
@@ -218,13 +221,12 @@ class CDInfos
 
 		LOGINFOS();
 		
-		return true;
 	}//---------------------------------------------------;
 		
 	
 	// -- Save current CD infos to a CUE file
 	//
-	public function cueSave(output:String, extraLines:Array<String> = null)
+	public function cueSave(output:String, extraLines:Array<String> = null):Void
 	{
 		LOG('Saving .cue, $output');
 		
@@ -293,7 +295,7 @@ class CDInfos
 	
 	// Load a previously saved CD infos .json
 	// --
-	public function jsonLoad(input:String)
+	public function jsonLoad(input:String):Void
 	{
 		LOG('jsonLoad(): Loading `$input`');
 		
@@ -387,7 +389,7 @@ class CDInfos
 		for (i in TR) 
 		{
 			var t = new CDTrack();
-			t.fromJSON(i);
+				t.fromJSON(i);
 			tracks.push(t);
 		}
 		
@@ -417,7 +419,7 @@ class CDInfos
 	// Save current settings to a .json file
 	// Stores everything (cue data + metadata)
 	// --
-	public function jsonSave(output:String)
+	public function jsonSave(output:String):Void
 	{
 		if (tracks.length == 0) throw "Warning , No tracks to save";
 		
@@ -574,7 +576,7 @@ class CDInfos
 	
 	// Return user Friendly CD REPORT
 	// --
-	public function getDetailedInfo()
+	public function getDetailedInfo():String
 	{
 		var d1:String = 
 			'Title	:  ${CD_TITLE} $NEWLINE' + 
@@ -621,7 +623,7 @@ class CDInfos
 	#else
 	inline function LOGINFOS() {}
 	#end
-	
+
 }//--
 
 
