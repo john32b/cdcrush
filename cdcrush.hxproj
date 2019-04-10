@@ -22,7 +22,7 @@
     <option directives="windows&#xA;TEST_EVERYTHING" />
     <option flashStrict="False" />
     <option noInlineOnDebug="False" />
-    <option mainClass="Main" />
+    <option mainClass="test.TestMain" />
     <option enabledebug="False" />
     <option additional="" />
   </build>
@@ -30,10 +30,12 @@
   <haxelib>
     <library name="hxnodejs" />
     <library name="djnode" />
+    <library name="jstack" />
   </haxelib>
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
-    <compile path="src\Main.hx" />
+    <compile path="src\test\Tests2.hx" />
+    <compile path="src\test\TestMain.hx" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>

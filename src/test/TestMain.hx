@@ -1,254 +1,428 @@
 package test;
 
-import app.Arc;
+import app.FFmpeg;
+import app.FreeArc;
+import app.SevenZip;
+import app.Tak;
 import cd.CDInfos;
 import djNode.BaseApp;
 import djNode.task.CJob;
 import djNode.task.CTestTask;
 import djNode.tools.FileTool;
+import djNode.tools.HTool;
 import djNode.tools.LOG;
-import djNode.utils.ActionInfo;
-import djNode.utils.CJobReport;
 import djNode.utils.CLIApp;
-import js.Error;
-import js.Node;
+import js.node.Crypto;
 import js.node.Fs;
 import js.node.Path;
 
 /**
- * Small Unit Tests
- * ...
+ * Tests for CDCRUSH Engine & Components
+ * 
+ * HOW TO RUN
+ * ----------
+ *  - set `PATH_TESTS` to a writable folder
  */
 class TestMain extends BaseApp 
 {
-
-	// Test Folder, Writable folder for some tests
-	var FLD_01:String = "a:\\";
+	// -
+	static function main() new test.TestMain();
 	
-	var quickExit:Void->Void = null;
-	
+	// You can check this file for more info on the tests
+	var LOG_FILE 	= "a:\\cdcrush_dev_log.txt";
+	var PATH_TESTS 	= "a:\\cdcrush_tests"; 		// (folder will be created)
 	// --
+	// Leave these alone:
+	var SOUND_WAV 	= "..\\tests\\sound.wav";
+	var PATH_CUE	= "..\\tests\\cd_test.cue";
+	var PATH_TOOLS 	= "..\\tools";
+	
+	// Some generated files that I need to keep track of
+	// Filepaths are generated from within Jobs
+	var gen = {
+		pcm:"",
+		flac:"",
+		flactopcm:"",
+		tak:"",
+		taktopcm:"",
+		a_7z:"",
+		a_zip:"",
+		a_arc:"",
+		fileR:"",
+	};
+	
+	// Since no operations are going to run simultaneously. I can reuse these objects
+	var Ff:FFmpeg;
+	var Tk:Tak;
+	//---------------------------------------------------;
+	
 	override function init() 
 	{
-		LOG.setLogFile("a:\\LOG.txt", true);
-		//--
-		PROGRAM_INFO.name = "TESTS FOR " + CDCRUSH.PROGRAM_NAME;
-		PROGRAM_INFO.version = CDCRUSH.PROGRAM_VERSION;
-		PROGRAM_INFO.desc = CDCRUSH.PROGRAM_SHORT_DESC;
-		PROGRAM_INFO.executable = "cdcrush";
-		PROGRAM_INFO.author = CDCRUSH.AUTHORNAME;
-		PROGRAM_INFO.contact = CDCRUSH.LINK_SOURCE;
-		
-		// <Actions>
-		ARGS.requireAction = true;
-		ARGS.Actions.push(['t1', 'Test cdcrush', 'Some CDCRUSH engine tests']);
-		ARGS.Actions.push(['t2', 'Test execulatbles']);
-		ARGS.Actions.push(['arc', 'Test ARC', 'Compresses all input files to output file (must be arc)']);
+		LOG.setLogFile(LOG_FILE);
 		super.init();
-		
 	}//---------------------------------------------------;
 	
 	override function onStart() 
 	{
-		super.onStart();
-
-		CDInfos.LOG = function(s){ LOG.log(s);};
+		T.H2("CDCRUSH Component Tests :");
 		
-		switch(argsAction)
-		{
-			case "t1": testCDCRUSH();
-			case "arc" : testArc();	// This is a one time test to test a big on the Arc.hx
-			case "t2": testExecutables();
-			default:
-		}
-	}//---------------------------------------------------;
-	
-	//====================================================;
-	// TESTS 
-	//====================================================;
-	
-	
-	// --
-	function testExecutables()
-	{
-		// Checks at same dir
-		var a = new ActionInfo();
-		a.actionStart("Testing FFMPEG");
-		a.actionEnd(CLIApp.checkRun("ffmpeg.exe -L"));
-		a.actionStart("Testing ECM");
-		a.actionEnd(CLIApp.checkRun("ecm.exe"));	
-		a.actionStart("Testing UNECM");
-		a.actionEnd(CLIApp.checkRun("unecm.exe"));
-		a.actionStart("Testing ARC");
-		a.actionEnd(CLIApp.checkRun("arc.exe"));
-		
-	}//---------------------------------------------------;
-	
-	
-	function testArc()
-	{
-		trace("Compressing", argsInput);
-		trace("Into", argsOutput);
-		var arc = new Arc("../tools/");
-			arc.events.on("progress", function(t){
-				trace("ARC PROGRESS GOT " , t);
-			});
-			arc.compress(argsInput, argsOutput, 5);
-			quickExit  = function(){
-				if (arc != null) {
-					arc.kill();
-				}
-			}
-	}//---------------------------------------------------;
-	
-	
-	// @param tempFolder : A temporary folder for operations (ROOT) a subfolder will be created
-	function testCDCRUSH()
-	{
-		trace('== CDRUSH UNIT TESTS ==');
-		trace('-----------------------');
-		
-		// Some components tests,
-		
-		var testBins = "../../tests/";
-		
-		///** Old Version Load test:
-			var cd = new cd.CDInfos();
-			trace("Loading JSON Version 1 ---");
-			cd.jsonLoad(Path.join(testBins, "V1.json"));
-			trace("Loading JSON Version 2 ---");
-			cd.jsonLoad(Path.join(testBins, "V2.json"));
-			trace("Loading JSON Version 3 ---");
-			cd.jsonLoad(Path.join(testBins, "V3.json"));
-		
-		// == CDCRUSH FUNCTIONS --
-		// --------------------------
-		
-		
-		var writableTemp = Path.join(FLD_01 , "//_cdcrush_tests");
-		
-		// Delete the folder
-		if (FileTool.pathExists(writableTemp)) 
-		{
-			trace('- Test Unit Test Folder : "$writableTemp" exists. Deleting.....');
-			FileTool.deleteRecursiveDir(writableTemp);
-			trace(">> OK");
-		}
-		
-		trace('- Creating Unit Test Folder : "$writableTemp"');
-		Fs.mkdirSync(writableTemp);
-		trace(">> OK");
+		Ff = new FFmpeg(); //<- You need ffmpeg on path
+		Tk = new Tak(PATH_TOOLS);
 		
 		// --
-		trace('- Setting Temp Folder to "$writableTemp"');
-		CDCRUSH.setTempFolder(writableTemp);
-		trace(">> OK");
-		
-		// --
-		var tf2 = Path.join(writableTemp, "test");
-		trace('- CheckCreateUniqueOutput($tf2);');
-		CDCRUSH.checkCreateUniqueOutput(tf2);
-		CDCRUSH.checkCreateUniqueOutput(writableTemp, 'test');
-		if (!FileTool.pathExists(tf2)) throw "Error";
-		if (!FileTool.pathExists(tf2 + "_")) throw "Error";
-		trace(">> OK.");
-		// --
-		trace("- GetAudioQualityString() Some Formats ::");
-		trace(CDCRUSH.getAudioQualityString({id:"flac",quality:0}));
-		trace(CDCRUSH.getAudioQualityString({id:"vorbis", quality:3}));
-		trace(CDCRUSH.getAudioQualityString({id:"opus", quality:3}));
-		trace(CDCRUSH.getAudioQualityString({id:"mp3", quality:3}));
-		
 		try{
-			trace(CDCRUSH.getAudioQualityString({id:"other", quality:3}));
-		}catch (d:Dynamic){
-			trace(" >> OK");
+			FileTool.deleteRecursiveDir(PATH_TESTS);
+			FileTool.createRecursiveDir(PATH_TESTS);
+		}catch (e:Dynamic) {
+			exitError('Can`t create or access $PATH_TESTS');
 		}
 		
-		trace(">> OK");
-		//--
 		
-	}//---------------------------------------------------;
-	
-	
-	/**
-	 * Simulate a real Crush Job
-	 * For Testing out the UI
-	 */
-	function getJobCrush(p:CDCRUSH.CrushParams)
-	{
-		var j = new CJob("Compress CD");
-		var TRACKS:Int = 3;
-		p.tempDir = "\\TEMP_DIR_FAKE\\";
-		// --
-		j.add(new CTestTask(100, "-Reading", "Reading Cue Data and Preparing"));
-		j.add(new CTestTask(500, "Cut", "Cutting tracks into separate files"));
-	
-		for (t in 0...TRACKS) 
-		{
-			j.addAsync(new CTestTask(500, "Encoding Track " + t));
-		}
-	
-		j.add(new CTestTask(100, "-Preparing", "Preparing to compress tracks"));
-		j.add(new CTestTask(700, "Compressing", "Compressing everything into an archive"));
-		j.add(new CTestTask(200, "Finalizing", "Appending settings into the archive"));
-		j.add(new CTestTask(100, "-Finalizing"));
-		// --
-		LOG.log('= COMPRESSING A CD with the following parameters :');
-		LOG.log('- Input : ' + p.inputFile);
-		LOG.log('- Output Dir : ' + p.outputDir);
-		LOG.log('- Temp Dir : ' + p.tempDir);
-		LOG.log('- Audio Quality : ' + CDCRUSH.getAudioQualityString(p.audio));
-		LOG.log('- Compression Level : ' + p.compressionLevel);
-	
-		return j;
-	}//---------------------------------------------------;
-	
-	
-	
-	/**
-	 * Simulate a Restore Job
-	 * For testing out the UI
-	 */
-	function getJobRestore(p:CDCRUSH.RestoreParams)
-	{
-		var j = new CJob("Restore CD");
-		var TRACKS:Int = 5;
-		p.tempDir = "\\TEMP_DIR_FAKE\\";
-		// --
-		j.add(new CTestTask(500, "Extracting", "Extracting the archive to temp folder"));
-		j.add(new CTestTask(100, "-Preparing to Restore", "Reading stored CD and preparing"));
-		for (t in 0...TRACKS) 
-		{
-			j.addAsync(new CTestTask(500, "Restoring Track " + t));
-		}		
-		j.add(new CTestTask(100, "-Preparing to Join"));
-		j.add(new CTestTask(300, "Join", "Joining tracks into a single .bin"));
-		j.add(new CTestTask(300, "Moving, Finalizing"));
+		// Task/Job Reports
+		// TODO: Better reports
+		CJob.global_job_status = (s, j)->{
+			if (s == CJobStatus.start) {
+				T.printf('--> STARTING TESTS : ~yellow~${j.name}~!~\n');
+			}else
+			if (s == CJobStatus.allcomplete) {
+				T.printf('--> All tests completed successfully ~green~[OK]~!~\n');
+				post();
+			}else
+			if (s == CJobStatus.fail) {
+				T.printf('~red~## A TEST HAS FAILED ##~!~\n');
+				T.printf('  > Task : ${j.TASK_LAST} | ERROR : ${j.ERROR}\n');
+				post();
+			}else
+			if (s == CJobStatus.taskStart) {
+				if (j.TASK_LAST.info != null) T.printf(' >> ${j.TASK_LAST.info}\n');
+			}
+			return null;
+		};
 		
-		// --
-		LOG.log('=== RESTORING A CD with the following parameters :');
-		LOG.log('- Input : ' + p.inputFile);
-		LOG.log('- Output Dir : ' + p.outputDir);
-		LOG.log('- Temp Dir : ' + p.tempDir);
-		LOG.log('- Force Single bin : ' + p.flag_forceSingle);
-		LOG.log('- Create subfolder : ' + p.flag_subfolder);
-		LOG.log('- Restore to encoded audio/.cue : ' + p.flag_encCue);
-		return j;
+		// Run Tests:
+		test_FFMPEG()
+			.start()
+			.then(test_TAK())
+			.then(test_Lossless_Integrity())
+			.then(test_Archivers())
+			.then(test_Split_Join())
+			.then(test_CDParser());
 	}//---------------------------------------------------;
-		
-	
-	var activeJob:CJob;
 
-	override function onExit() 
+	
+	function post()
 	{
-		if (activeJob != null) activeJob.forceKill();
-		if (quickExit != null) quickExit();
-		super.onExit();
+		T.fg("yellow");
+		T.print('Please manually delete the test folder\n');
+		T.printf('  > $PATH_TESTS ~!~\n');
 	}//---------------------------------------------------;
 	
-	// --
-	static function main()  {
-		new test.TestMain();
+	
+	/**
+	   Test CDInfos class
+	   - Reading/Writing CUE
+	   - Reading/Writing JSON
+	**/
+	function test_CDParser()
+	{
+		var j = new CJob("CD Parser");
+		var cd:CDInfos;
+		
+		j.addQ((t)->{
+			CDInfos.LOG = (s)->LOG.log(s);
+			cd = new CDInfos();
+			// Should load and not throw errors
+			trace("Reading CUE file");
+			cd.cueLoad(PATH_CUE);
+			// Should save and not throw errors
+			trace("Saving CUE file");
+			cd.cueSave(Path.join(PATH_TESTS, "cuesave.cue"), ["Saved from CDCRUSH TestSuite"]);
+			// -
+			trace("Saving JSON CD Info file");
+			cd.tracks[0].storedFileName = "track01.bin";
+			cd.tracks[1].storedFileName = "track02.bin";
+			cd.tracks[2].storedFileName = "track03.bin";
+			cd.jsonSave(Path.join(PATH_TESTS, "cdsave.json"));
+			t.complete();
+		});
+		
+		return j;
 	}//---------------------------------------------------;
-}// --
+	
+	
+	/**
+	   - Splitting A file to multiple parts
+	   - Joining that file back to a single file
+	   - Comparing Hashes
+	**/
+	function test_Split_Join()
+	{
+		var j = new CJob("File Split/Join");
+		
+		var BYTELEN = 65536 * 2;
+		var p1len = Math.floor(BYTELEN / 2) - 1024; // Not exactly half
+		var md5 = "";
+		var p1,p2,joined:String;
+		
+		j.addQ((t)->{
+			gen.fileR = Path.join(PATH_TESTS, 'fileRandom.rnd');
+			// Create random file;
+			var fs = Fs.createWriteStream(gen.fileR);
+				fs.write(Crypto.randomBytes(BYTELEN), t.complete);
+		});
+		j.addQ((t)->{
+			trace('Generated File with Random Data ($BYTELEN) bytes');
+			p1 = gen.fileR + '.part1';
+			trace("Cutting File to part 1 with size " + p1len);
+			FileTool.copyFilePart(gen.fileR, p1, 0, p1len, (s)->{
+				if (s == null) t.complete(); else t.fail(s);
+			});
+		});
+		j.addQ((t)->{
+			p2 = gen.fileR + '.part2';
+			trace("Cutting File to part 2 with remaining size");
+			FileTool.copyFilePart(gen.fileR, p2, p1len, 0, (s)->{
+				if (s == null) t.complete(); else t.fail(s);
+			});
+		});
+		j.addQ((t)->{
+			trace('Joining Part1 + Part2 Together again');
+			joined = gen.fileR + '.joined';
+			FileTool.copyFilePart(p1, joined, 0, 0, (s)->{
+				if (s == null) t.complete(); else t.fail(s);
+			});
+		});
+		j.addQ((t)->{
+			FileTool.copyFilePart(p2, joined, 0, 0, (s)->{
+				if (s == null) t.complete(); else t.fail(s);
+			});
+		});
+		j.addQ((t)->{
+			md5 = FileTool.getFileMD5(gen.fileR);
+			var md5_j = FileTool.getFileMD5(joined);
+			trace('Original File MD5: $md5');
+			trace('Joined   File MD5: $md5_j');
+			if (md5 != md5_j){
+				throw " Joined file different MD5 hash";
+			}else{
+				t.complete();
+			}
+		});
+		return j;
+	}//---------------------------------------------------;
+		
+	
+	/**
+		- Creating 7zip and zip archives
+		- Restoring 7zip and zip archives
+		- Comparing filesize of original and restored
+	**/
+	function test_Archivers():CJob
+	{
+		var j = new CJob("7Zip Archiver");
+		var Z = new SevenZip(PATH_TOOLS);
+		var A = new FreeArc(PATH_TOOLS);
+		
+		var fold:Array<String> = []; // Extracted archives folders [7z,zip,arc];
+		
+		var flist:Array<String>;	// Files to compress
+		var fsize:Float;
+	
+		j.addQ("Initializing Archiver test files", (t)->{
+			gen.a_7z  = Path.join(PATH_TESTS, 'archive.7z');
+			gen.a_zip = Path.join(PATH_TESTS, 'archive.zip');
+			gen.a_arc = Path.join(PATH_TESTS, 'archive.arc');
+			flist = [gen.flac, gen.tak, gen.pcm];
+			fsize = 0.0; // Force Float Type
+			for (i in flist) fsize += Fs.statSync(i).size;
+			t.complete();
+		});
+				
+		// Compress files with default compression
+		j.addQ("Creating (.7z) Archive", (t)->{
+			t.syncWith(Z);
+			Z.compress(flist, gen.a_7z);
+		});
+		j.addQ("Creating (.zip) Archive",(t)->{
+			t.syncWith(Z);
+			Z.compress(flist, gen.a_zip);
+		});
+		j.addQ("Creating (.arc) Archive",(t)->{
+			t.syncWith(A);
+			A.compress(flist, gen.a_arc);
+		});
+	
+		// Restore archives each to separate folder
+		j.addQ("Restoring Archive (.7z)",(t)->{
+			t.syncWith(Z);
+			fold[0] = Path.join(PATH_TESTS, "_7z");
+			Z.extract(gen.a_7z, fold[0]);
+		});
+		j.addQ("Restoring Archive (.zip)",(t)->{
+			t.syncWith(Z);
+			fold[1] = Path.join(PATH_TESTS, "_zip");
+			Z.extract(gen.a_zip, fold[1]);
+		});
+		j.addQ("Restoring Archive (.arc)",(t)->{
+			t.syncWith(A);
+			fold[2] = Path.join(PATH_TESTS, "_arc");
+			A.extract(gen.a_arc, fold[2]);
+		});
+		
+		// Check file sizes 
+		j.addQ("Checking Archives", (t)->{
+			trace("Original files Size: " + fsize);
+			
+			// - Get the restored files size
+			var fl:Array<Array<String>> = [];
+			var sizes:Array<Float> = [];
+			for (i in fold) fl.push(FileTool.getFileListFromDir(i, true));
+			for (c in 0...fl.length) {
+				sizes[c] = 0;
+				for (f in fl[c]) sizes[c] += Fs.statSync(f).size;
+			}
+			
+			trace("Extracted files from (.7z) Size   : " + sizes[0]);
+			trace("Extracted files from (.zip) Size  : " + sizes[1]);
+			trace("Extracted files from (.arc) Size  : " + sizes[2]);
+			if (sizes[0] != fsize) throw "7zip restored files, different size";
+			if (sizes[1] != fsize) throw "Zip restored files, different size";
+			if (sizes[2] != fsize) throw "FreeArc restored files, different size";
+			t.complete();
+		});
+		
+		return j;
+	}//---------------------------------------------------;
+	
+	
+	/**
+	   - Calculates MD5 of lossless tracks restored back to PCM
+	   - FLAC,TAK -against-> original PCM
+	   - Hash must be the same
+	**/
+	function test_Lossless_Integrity():CJob
+	{
+		var j = new CJob("Test Recovered Audio Hash");
+		return j.addQ("Checking Audio Integrity", (t)->{
+			var m1 = FileTool.getFileMD5(gen.pcm);
+			var m2 = FileTool.getFileMD5(gen.flactopcm);
+			var m3 = FileTool.getFileMD5(gen.taktopcm);
+			trace("Audio MD5 (PCM)       : " + m1);
+			trace("Audio MD5 (FLAC->PCM) : " + m2);
+			trace("Audio MD5 (TAK->PCM)  : " + m3);
+			if (m1 != m2) throw "Flac Restore Error";
+			if (m1 != m3) throw "TAK Restore Error";
+			t.complete();
+		});
+	}//---------------------------------------------------;
+	
+	
+	/**
+	  - Checks TAK functions 
+	**/
+	function test_TAK():CJob
+	{
+		gen.tak = gen.pcm + '_.tak';
+		gen.taktopcm = gen.pcm + '_(r)_tak_.pcm';
+		
+		var j = new CJob("TAK Test");
+
+		j.addQ((t)->{
+			trace("TAK.streamEncode() , FFmpeg.stream_PCMtoWAVStream()");
+			trace("PCM (STREAM) -> FFMPEG -> WAV (STREAM) -> TAK -> File Output");
+			t.syncWith(Tk);	// <- next task when Tak process Closes
+			// NOTE: I can do pipes like this, no callbacks when ready, since they are buffered to RAM
+			var inWavstream = Tk.streamEncode(gen.tak);
+			var pcmtowav = Ff.stream_PCMtoWAVStream(); // Dual Converter
+				pcmtowav._out.pipe(inWavstream);
+			var fstream = Fs.createReadStream(gen.pcm);
+				fstream.pipe(pcmtowav._in);
+		});		
+		
+		j.addQ((t)->{
+			trace("TAK.streamDecode()");
+			trace("TAK File -> WAV (STREAM) -> FFMPEG -> PCM File");
+			t.syncWith(Ff);
+			var inwav  = Ff.stream_WAVtoPCMFile(gen.taktopcm);
+			var takstr = Tk.streamDecode(gen.tak);
+			takstr.pipe(inwav);
+			
+		});
+		
+		return j;
+	}//---------------------------------------------------;
+
+
+	/**
+	   - Checks FFmpeg and functions
+	**/
+	function test_FFMPEG():CJob
+	{		
+		var j = new CJob("FFmpeg Test");
+	
+		// - Prepare the filenames to be created (some of them)
+		gen.pcm  = Path.join(PATH_TESTS, 'audio_.pcm');
+
+		// -- 
+		j.addQ("FFmpeg check", (t)->{
+			// Check for FFMPEG
+			if (!Ff.exists()) throw "ffmpeg.exe not found";
+			trace('FFMPEG.FileDuration()');
+			Ff.getSecondsFromFile(SOUND_WAV, (s)->{
+				trace('Seconds Got : $s');
+				if (s ==-1) {
+					t.fail("Error reading file info.");
+				}else{
+					t.complete();
+				}
+			});
+		});
+		
+		j.addQ( (t)->{
+			// And in the same task do:
+			trace('FFMPEG.encodeToPCM()');
+			t.syncWith(Ff);
+			Ff.encodeToPCM(SOUND_WAV, gen.pcm);
+			// I need to wait for that ^ to finish, so new task
+		});
+		
+		// - Test FFMPEG codecs
+		var codecs = CodecMaster.getAvailableAudioCodecsID();
+		for (i in codecs)
+		{
+			// Special, TAK encoding not with FFMPEG
+			if (i == "TAK") continue;
+			
+			j.addQ( (t)->{
+				var ac = CodecMaster.audio.get(i);
+				var encstr = CodecMaster.getAudioStr(i, 1);
+				trace('FFMPEG.encodeFromPCM($encstr)');
+				t.syncWith(Ff);
+				var f = '${gen.pcm}_${i}_${ac.ext}';
+				if (i == "FLAC") gen.flac = f;
+				Ff.encodeFromPCM(gen.pcm, encstr, f);
+			});
+		}
+		
+		j.addQ( (t) ->{
+			trace("Restoring FLAC back to PCM");
+			t.syncWith(Ff);
+			gen.flactopcm = gen.pcm + '_(r)_flac_.pcm';
+			Ff.encodeToPCM(gen.flac, gen.flactopcm);
+		});
+		
+		
+		j.addQ( (t) ->{
+			trace("FFMPEG.stream_PCMtoEncFile()");
+			var fstream  = Fs.createReadStream(gen.pcm);
+			// Puting a random encoder, encoders already tested
+			var instream = Ff.stream_PCMtoEncFile(CodecMaster.getAudioStr('VORBIS', 0), Path.join(PATH_TESTS, "frompcmstream.ogg"));
+			t.syncWith(Ff);
+			fstream.pipe(instream);
+			fstream.once("close", ()-> trace('File Stream for "${gen.pcm}" [CLOSE]'));
+		});
+		
+		return j;
+	}//---------------------------------------------------;
+	
+}// 

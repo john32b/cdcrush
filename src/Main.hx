@@ -41,35 +41,45 @@ class Main extends BaseApp
 		PROGRAM_INFO.desc = CDCRUSH.PROGRAM_SHORT_DESC;
 		PROGRAM_INFO.executable = "cdcrush";
 		PROGRAM_INFO.author = CDCRUSH.AUTHORNAME;
-		PROGRAM_INFO.contact = CDCRUSH.LINK_SOURCE;
+		PROGRAM_INFO.info = CDCRUSH.LINK_SOURCE;
 		
 		// --
-		ARGS.Actions.push(['c', 'crush', 'Compress a CD image file.', "cue"]);
-		ARGS.Actions.push(['r', 'restore', 'Restore a compressed CD.', "arc"]);
+		ARGS.Actions = [
+			['c', 'crush', 'Compress a CD image file.', "cue"],
+			['r', 'restore', 'Restore a compressed CD.', "arc,7z,zip"]
+		];
 		
 		ARGS.requireAction = true;
-		ARGS.inputRule = "multi";
-		ARGS.helpInput = "Action is determined by input file extension.\nSupports multiple inputs and wildcards (*.cue)";
+		ARGS.inputRule 	= "multi";
+		ARGS.helpInput  = "Action is determined by input file extension.\nSupports multiple inputs and wildcards (*.cue)";
 		ARGS.helpOutput = "Specify an output directory (optional)";
+		
 		// --
-		ARGS.Options.push(['-folder',  'Folder','<Restore> to a subfolder named after the CD title']);
-		ARGS.Options.push(['-enc', 'Encoded Audio/Cue','<Restore> <Crush> to encoded audio files/.cue']);
-		ARGS.Options.push(['-single',  'Force Single Bin','<Restore> to a single .bin/.cue ']);
-		ARGS.Options.push(['-ac', 'Audio Codec', 'Select an audio codec for encoding audio tracks\n' +
-							"'flac','opus','vorbis','mp3'", 'yes']);
-		ARGS.Options.push(['-aq', 'Audio Quality', 'Select an audio quality for the audio codec\n' +
-							'0:lowest, 10:highest (Ignored in FLAC)', 'yes']);
-		ARGS.Options.push(['-cl', 'Compression Level', 'FreeArc compression Level,\n' +
-							'0:Fastest, 4:Default, 9:Highest(not recommended)', 'yes']);
-		ARGS.Options.push(['-threads', 'Threads', 'Number of maximum threads allowed for operations (1-8)', 'yes']);
-		ARGS.Options.push(['-temp', 'Temp Folder', 'Set a custom temp folder for operations', 'yes']);
-		ARGS.Options.push(['-log', 'Log File', 'Produce a log file to a path.(e.g. -log c:\\log.txt)', 'yes']);
+		ARGS.Options = [
+			['e',  'Encoded Audio/Cue', '<Restore> <Crush> to encoded audio files/.cue'],
+			['b',  'SubFolder', '<Restore> to a subfolder in output path (autonamed to CD title)'],
+			['s',  'Force Single Bin', '<Restore> to a single .bin/.cue '],
+			['ac', 'Audio Codec', 'Select an audio codec for encoding audio tracks\n' +
+							"'flac','opus','vorbis','mp3'", 'yes'],
+			['aq', 'Audio Quality', 'Select an audio quality for the audio codec\n' +
+							'0:lowest, 10:highest (Ignored in FLAC)', 'yes'],
+			['cl', 'Archive Compression Level', 'FreeArc/Zip/7Zip Compression Level,\n' +
+							'0:Lowest, 4:Highest', 'yes'],
+			['t',  'Threads', 'Number of maximum threads allowed for operations (1-8)', 'yes'],
+			['tmp', 'Temp Folder', 'Set a custom temp folder for operations', 'yes'],
+			['log', 'Set Log File', 'Produce a log file to a path.(e.g. -log c:\\log.txt)', 'yes']
+		];
+		
 		
 		#if debug
+			LOG.pipeTrace();
 			LOG.setLogFile("a:\\LOG.txt", true);
 		#end
 		
+		FLAG_USE_SLASH_FOR_OPTION = true;
+		
 		super.init();
+		
 	}//---------------------------------------------------;
 	
 	// --

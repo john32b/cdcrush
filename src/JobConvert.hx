@@ -1,7 +1,6 @@
 package;
 
 import djNode.task.CJob;
-import app.Arc;
 import cd.CDInfos;
 import djNode.task.CJob;
 import djNode.task.CTask;

@@ -12,10 +12,12 @@
  * + Using haxe.sys, so should be compatible with all haxe targets
  * 
  * HELP :
- * - http://wiki.hydrogenaud.io/index.php?title=Cue_sheet
+ *  - http://wiki.hydrogenaud.io/index.php?title=Cue_sheet
  * 
  * NOTES :
- * + Supports .CUE TITLES
+ *  ! The last track on single file bin will get a sector size from the start
+ *    of the track to the end of the file, ( instead of trimming the extra data )
+ * 
  * 
  * FOR C# :
  * + try catch (haxe.lang.HaxeException) on functions and access ().message

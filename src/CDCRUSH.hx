@@ -3,17 +3,14 @@
  *  - @Author: johndimi, <johndimi@outlook.com>
  * ----------------------------------------------
  *  CDCRUSH main engine class, 
- *  responsible for all operations
  * ----------------------------------------------
  * 
  * Notes:
- * 
  * 	-
  * 
  ========================================================*/
  
 package;
-import app.FFmpegAudio;
 import cd.CDInfos;
 import djNode.task.CJob;
 import djNode.task.CJob.CJobStatus;
@@ -43,13 +40,13 @@ class CDCRUSH
 	// -- Program Infos
 	public static inline var AUTHORNAME = "John Dimi";
 	public static inline var PROGRAM_NAME = "cdcrush";
-	public static inline var PROGRAM_VERSION = "1.4";
+	public static inline var PROGRAM_VERSION = "1.5";
 	public static inline var PROGRAM_SHORT_DESC = "Highy compress cd-image games";
 	public static inline var LINK_DONATE = "https://www.paypal.me/johndimi";
 	public static inline var LINK_SOURCE = "https://github.com/johndimi/cdcrush";
 	public static inline var CDCRUSH_SETTINGS = "crushdata.json";
 	public static inline var CDCRUSH_COVER = "cover.jpg";	// Unused in CLI modes
-	public static inline var CDCRUSH_EXTENSION = ".arc";	
+	public static inline var CDCRUSH_EXTENSION = ".arc";
 	
 	// When restoring a cd to a folder, put this at the end of the folder's name
 	public static inline var RESTORED_FOLDER_SUFFIX = " (r)";	
@@ -181,6 +178,9 @@ class CDCRUSH
 	**/
 	public static function getAudioQualityString(cc:AudioCodecParams):String
 	{
+		throw "Port to new";
+		return "";
+		/*
 		var res:String = AUDIO_CODECS.get(cc.id) + ' ';
 		if (cc.quality < 0 || cc.quality > 10) throw "Audio Codec Error, Quality must be 0-10";
 		switch(cc.id.toLowerCase()) {
@@ -196,6 +196,7 @@ class CDCRUSH
 				throw "Audio Codec Error : " + cc.id;
 		}
 		return res;
+		*/
 	}//---------------------------------------------------;
 	
 	/**
