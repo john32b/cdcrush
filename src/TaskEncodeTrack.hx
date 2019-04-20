@@ -134,10 +134,7 @@ class TaskEncodeTrack extends CTask
 	// Delete old files ONLY IF they reside in the TEMP folder!
 	function deleteOldFile()
 	{
-		if (CDCRUSH.FLAG_KEEP_TEMP) return;
-		
-		if (p.flag_sourceTracksOnTemp)
-		{
+		if (!CDCRUSH.FLAG_KEEP_TEMP && p.flag_tracksOnTempFolder) {
 			Fs.unlinkSync(sourceTrackFile);
 		}
 	}//---------------------------------------------------;

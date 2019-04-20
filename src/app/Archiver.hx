@@ -51,4 +51,9 @@ class Archiver implements ISendingProgress
 	
 	public function append(archive:String, files:Array<String>):Bool return false;
 	
+	public function kill()
+	{
+		if (app != null) app.kill();
+	}//---------------------------------------------------;
+	
 }// -

@@ -1,15 +1,17 @@
-/**----------------------------------------------
+/*----------------------------------------------
+ *   ___ ___     ___ ___ _   _ ___ _  _ 
+ *  / __|   \   / __| _ \ | | / __| || |
+ * | (__| |) | | (__|   / |_| \__ \ __ |
+ *  \___|___/   \___|_|_\\___/|___/_||_|
+ * 
  * == CDCRUSH.hx
- *  - @Author: johndimi, <johndimi@outlook.com>
+ * @author: JohnDimi, <johndimi@outlook.com>
  * ----------------------------------------------
- *  CDCRUSH main engine class, 
+ * - CDCRUSH main engine class
  * ----------------------------------------------
  * 
- * Notes:
- * 	-
- * 
- ========================================================*/
- 
+ * ---------------------------------------------- */
+
 package;
 import cd.CDInfos;
 import djNode.task.CJob;
@@ -25,16 +27,11 @@ import js.node.Path;
 
 
 
-//   ___ ___     ___ ___ _   _ ___ _  _ 
-//  / __|   \   / __| _ \ | | / __| || |
-// | (__| |) | | (__|   / |_| \__ \ __ |
-//  \___|___/   \___|_|_\\___/|___/_||_|
-//
 
 class CDCRUSH
 {
 	//====================================================;
-	// SOME STATIC VARIABLES ABOUT THE CDCRUSH ENGINE
+	// SOME STATIC VARIABLES 
 	//====================================================;
 	
 	// -- Program Infos
@@ -46,7 +43,8 @@ class CDCRUSH
 	public static inline var LINK_SOURCE = "https://github.com/johndimi/cdcrush";
 	public static inline var CDCRUSH_SETTINGS = "crushdata.json";
 	public static inline var CDCRUSH_COVER = "cover.jpg";	// Unused in CLI modes
-	public static inline var CDCRUSH_EXTENSION = ".arc";
+	
+	public static inline var CUE_EXTENSION = ".cue";
 	
 	// When restoring a cd to a folder, put this at the end of the folder's name
 	public static inline var RESTORED_FOLDER_SUFFIX = " (r)";	
@@ -56,18 +54,12 @@ class CDCRUSH
 	// ~~ Shares name with the C# BUILD
 	public static inline var TEMP_FOLDER_NAME = "CDCRUSH_361C4202-25A3-4F09-A690";
 	
-	
-	public static inline var DEFAULT_AUDIO_C = "flac";
-	public static inline var DEFAULT_AUDIO_Q = 3;
-	public static inline var DEFAULT_ARC_LEVEL = 4;
-	
-	
 	// Keep temporary files, don't delete them
-	// Currently for debug builds only
+	// Useful for debugging
 	public static var FLAG_KEEP_TEMP:Bool = false;
 	
 	// Maximum concurrent tasks in CJobs
-	public static var MAX_TASKS:Int = 3;
+	public static var MAX_TASKS(default, null):Int = 3;
 	
 	// Is FFMPEG ready to go?
 	public static var FFMPEG_OK(default, null):Bool;
@@ -82,63 +74,53 @@ class CDCRUSH
 	public static var TEMP_FOLDER(default, null):String;
 		
 	// General use Error Message, read this to get latest errors from functions
-	//public static var ERROR(default, null):String;
-	
-	// Available Audio Codecs
-	public static var AUDIO_CODECS(default, null):Map<String,String> = [
-		"flac" => "FLAC",
-		"vorbis" => "Ogg Vorbis",
-		"opus" => "Ogg Opus",
-		"mp3" => "MP3"
-	];
-	
-	// #Externally Set, all Jobs will push progress there
-	public static var JOB_STATUS_HANDLER:CJobStatus->CJob->Void = null;
+	//public static var ERROR(default, null):String;	
 	
 	
-	// -----
-	
+	/**
+	   Initialize CDCRUSH 
+	   @param	tempFolder
+	**/
 	public static function init(?tempFolder:String)
 	{
 		LOG.log('== ' + PROGRAM_NAME + ' - v ' + PROGRAM_VERSION);
 		LOG.log('== ' + PROGRAM_SHORT_DESC);
-		#if TEST_EVERYTHING		
-		LOG.log("== DEFINED : TEST_EVERYTHING");
-		LOG.log("== > Will do extra checksum checks on all operations.");
+		#if EXTRA_TESTS
+		LOG.log('== DEFINED : EXTRA_TESTS');
+		LOG.log('== > Will do extra checksum checks on all operations.');
 		#end
 		LOG.log('== ------------------------------------------------- \n\n');
 		
-		//
 		#if debug
-			TOOLS_PATH = "../tools/";		// When running from source/bin/
+			// When running from `source/bin/`
+			TOOLS_PATH = "../tools/";		
 			FFMPEG_PATH = "";
-			
-		#else // NPM BUILD ::
-		
+		#else  
+			// NPM BUILD :
 			// Same folder as the main .js script :
-			TOOLS_PATH = Path.dirname(Node.process.argv[1]);	
+			TOOLS_PATH = FileTool.appFileToFullPath("");
 			FFMPEG_PATH = "";		
 		#end
 		
-		#if standalone
+		#if STANDALONE
+			// Everying is included in 
 			TOOLS_PATH = "tools/";
 			FFMPEG_PATH = "tools/";
 		#end
 		
-		CDInfos.LOG = function(l){ LOG.log(l); }	
-		
-		// ERROR = null;	// In case of eror/
+		CDInfos.LOG = (l)->{LOG.log(l);}
 		
 		setTempFolder(tempFolder);
 	}//---------------------------------------------------;
 	
-	
+	// --
 	public static function setThreads(t:Int)
 	{
 		if (t > 8) t = 8 else if (t < 1) t = 1;
 		MAX_TASKS = t;
 		LOG.log("== MAX_TASKS = " + MAX_TASKS);
 	}//---------------------------------------------------;
+	
 	/**
 	   Try to set a temp folder, Returns success
 	   @param	f The ROOT folder in which the temp folder will be created
@@ -170,35 +152,6 @@ class CDCRUSH
 		LOG.log("+ TEMP FOLDER = " + TEMP_FOLDER);
 	}//---------------------------------------------------;
 	
-	
-	/**
-	   ~ Also checks for validity ~
-	   @param	codecInfo { id, quality }
-	   @return
-	**/
-	public static function getAudioQualityString(cc:AudioCodecParams):String
-	{
-		throw "Port to new";
-		return "";
-		/*
-		var res:String = AUDIO_CODECS.get(cc.id) + ' ';
-		if (cc.quality < 0 || cc.quality > 10) throw "Audio Codec Error, Quality must be 0-10";
-		switch(cc.id.toLowerCase()) {
-			case 'flac':
-				res += "Lossless";
-			case 'vorbis':
-				res += FFmpegAudio.VORBIS_QUALITY[cc.quality] + 'k Vbr';
-			case 'opus' : 
-				res += FFmpegAudio.OPUS_QUALITY[cc.quality] + 'k Vbr';
-			case 'mp3':
-				res += FFmpegAudio.MP3_QUALITY[cc.quality] + 'k Vbr';
-			default:
-				throw "Audio Codec Error : " + cc.id;
-		}
-		return res;
-		*/
-	}//---------------------------------------------------;
-	
 	/**
 	   Check if path exists and create it
 	   If it exists, rename it to a new safe name, then return the new name
@@ -210,7 +163,7 @@ class CDCRUSH
 		try{
 			path = Path.join(A, B);
 		}catch (e:Error){
-			throw "Can't join paths (" + A + " + " + B + " ) ";
+			throw 'Can`t join paths ($A + $B)';
 		}
 		
 		while (FileTool.pathExists(path))
@@ -232,7 +185,7 @@ class CDCRUSH
 	
 	/**
 	   Check if file EXISTS and is of VALID EXTENSION
-	   ~Throws Errors
+	   @Throws
 	   @param ext Extension WITH "."
 	**/
 	public static function checkFileQuick(file:String, ext:String)
@@ -255,49 +208,10 @@ class CDCRUSH
 	{
 		return Path.join(TEMP_FOLDER , StrTool.getGUID().substr(0, 12));
 	}//---------------------------------------------------;
-	
-	
-	//====================================================;
-	
-	/**
-	   Handle CLI parameters and return a CrushParams object with Default Values on missing fields
-	**/
-	public static function getCrushParams(inp:String, outp:String, ac:String, aq:Int, cl:Int):CrushParams
-	{
-		if (ac == null) ac = DEFAULT_AUDIO_C;
-		if (aq == null) aq = DEFAULT_AUDIO_Q;
-		if (cl == null) cl = DEFAULT_ARC_LEVEL;
-		
-		// This is the only place to sanitize compression level
-		if (cl < 0) cl = 0; else if(cl>9) cl=9;
-		
-		var p = new CrushParams();
-			p.inputFile = inp;
-			p.outputDir = outp;
-			p.compressionLevel = cl;
-			p.audio = {
-				id:ac,
-				quality:aq
-			};
-		return p;
-	}//---------------------------------------------------;
-	
-	/**
-	   Handle CLI parameters and return a RestoreParams object with Default Values on missing fields
-	**/
-	public static function getRestoreParams(inp:String, outp:String, sng:Bool, fold:Bool, enc:Bool):RestoreParams
-	{
-		var p = new RestoreParams();
-			p.inputFile = inp;
-			p.outputDir = outp;
-			p.flag_forceSingle = sng;
-			p.flag_subfolder = fold;
-			p.flag_encCue = enc;
-			
-		return p;
-	}//---------------------------------------------------;
 
 }// -- end class
+
+
 
 //====================================================;
 // TYPES 
@@ -305,53 +219,42 @@ class CDCRUSH
 
 
 
-// - Describe an encoding Audio Quality
-typedef AudioCodecParams = {
-	id:String,	// check CDCRUSH.AUDIO_CODECS
-	quality:Int
-}// --
-
-
 /**
    Object storing all the parameters for :
    - CRUSH job
    - CONVERT job
 **/
-class CrushParams
-{
-	public function new(){}
-	// -- Input Parameters -- //
+typedef CrushParams = {
 	
 	// The CUE file to compress
-	public var inputFile:String;
+	inputFile:String,
 	// Output Directory, The file will be autonamed
 	// ~ Optional ~ Defaults to the directory of the `inputfile`
-	public var outputDir:String;
-	// Audio settings for encoding
-	public var audio:CDCRUSH.AudioCodecParams;
-	// ARC compression level, 0-9 (engine default to 4)
-	public var compressionLevel:Int;
+	?outputDir:String,
+	// Audio Settings String (e.g OPUS:1, MP3:1) Null for default ( defined in CodecMaster )
+	?ac:String,
+	// Data Compression String (e.g. 7Z:2, ARC ) Null for default ( defined in CodecMaster )
+	?dc:String,
+	// Do not Create Archive, Just Convert Audio Tracks (USED in `JobConvert`)
+	?flag_convert_only:Bool,
 
 	// -- Internal Access -- //
 	
-	// Keep the CD infos of the CD, it is going to be read later
-	public var cd:CDInfos;
-	// Filesize of the final archive
-	public var crushedSize:Int;
-	// Temp dir for the current batch, it's autoset, is a subfolder of the master TEMP folder.
-	public var tempDir:String;
-	// Final destination ARC file, autogenerated from CD TITLE
-	public var finalArcPath:String;
-	// If true, then all the track files are stored in temp folder and safe to delete
-	public var flag_sourceTracksOnTemp:Bool;
-	// USED in `JobConvertCue`
-	public var flag_convert_only:Bool;
-	
-	// Used for reporting back to user
-	public var convertedCuePath:String;
+	//// Keep the CD infos of the CD, it is going to be read later
+	//cd:CDInfos,
+	//// Filesize of the final archive
+	//crushedSize:Int,
+	//// Temp dir for the current batch, it's autoset, is a subfolder of the master TEMP folder.
+	//tempDir:String,
+	//// Final destination ARC file, autogenerated from CD TITLE
+	//finalArcPath:String,
+	//// If true, then all the track files are stored in temp folder and safe to delete
+	//flag_sourceTracksOnTemp:Bool,
+	//
+	//// Used for reporting back to user
+	//convertedCuePath:String,
 	
 }// --
-
 
 
 
@@ -377,7 +280,7 @@ class RestoreParams
 	// TRUE: Create a subfolder with the game name in OutputDir
 	public var flag_subfolder:Bool;
 	
-	// TRUE: Will not restore audio tracks. Will create a cue with enc audio 
+	// TRUE: Will not restore audio tracks to PCM. Will create CUE with Encoded Audio Files
 	public var flag_encCue:Bool;
 	
 	// : Internal Use :

@@ -1,4 +1,7 @@
 package;
+import app.Archiver;
+import app.FreeArc;
+import app.SevenZip;
 
 typedef AudioInfo = {
 	name:String,
@@ -17,6 +20,13 @@ typedef ArcInfo = {
 };
 
 
+// Store either Audio or Archiver Settings
+typedef SettingsTuple = {
+	id:String,
+	q:Int
+};
+
+
 /**
    CODEC MASTER
    ------------
@@ -28,6 +38,10 @@ typedef ArcInfo = {
 
 class CodecMaster 
 {
+	
+	public static var DEFAULT_AUDIO_PARAM = "FLAC";
+	public static var DEFAULT_ARCHIVER_PARAM = "ARC:1";
+	
 	
 	// ARCHIVERS
 	public static var arc:Map<String,ArcInfo> = [
@@ -100,40 +114,103 @@ class CodecMaster
 	//---------------------------------------------------;
 	
 	
-	
-	public static function getAudioStr(codecID:String, q:Int):String
+	public static function getArchiver(id:String):Archiver
 	{
-		var c = audio.get(codecID);
-		if (c.qReal == null) 
-			return c.encstr;
-		else
-			return c.encstr + c.qReal[q];
+		if (id == "ARC") 
+		return new FreeArc(CDCRUSH.TOOLS_PATH) ;
+		return new SevenZip(CDCRUSH.TOOLS_PATH);
 	}//---------------------------------------------------;
 	
-	
-	public static function getAvailableAudioCodecsID():Array<String>
+	public static function getArcExt(id:String)
 	{
-		var a:Array<String> = [];
-		for (k in audio.keys()) a.push(k);
-		return a;
+		return arc.get(id).ext;
+	}//---------------------------------------------------;
+	
+	public static function getArchiverStr(a:SettingsTuple):String
+	{
+		return arc.get(a.id).cStr[a.q];
 	}//---------------------------------------------------;
 	
 	/**
-	   
+	   Return User Readable string from CodecID/Quality Combo
 	   @param	codecID
 	   @param	quality 0,1,2 (LOW,MED,HIGH)
 	**/
-	public static function getAudioQualityInfo(codecID:String, quality:Int):String
+	public static function getAudioQualityInfo(a:SettingsTuple):String
 	{
-		var c = audio.get(codecID);
+		var c = audio.get(a.id);
 		
-		if (c.qReal.length == 0) // LOSSLESS
+		if (c.qReal == null) // LOSSLESS
 		{
 			return c.name;
 		}
 		
 		// e.g. "Opus 96k Vbr";
-		return c.name + ' ' + c.qName[quality] + c.p;
+		return c.name + ' ' + c.qName[a.q] + c.p;
+	}//---------------------------------------------------;
+	
+	public static function getAudioStr(a:SettingsTuple):String
+	{
+		var c = audio.get(a.id);
+		if (c.qReal == null) 
+			return c.encstr;
+		else
+			return c.encstr + c.qReal[a.q];
+	}//---------------------------------------------------;
+	
+	public static function getAvailableArchivers():Array<String>
+	{
+		return [for (k in arc.keys()) k];
+	}//---------------------------------------------------;
+	
+	public static function getAvailableAudioCodecs():Array<String>
+	{
+		return [for (k in audio.keys()) k];
+	}//---------------------------------------------------;
+	
+	// Checks and Normalizes
+	public static function normalizeAudioSettings(s:String):String
+	{
+		return parseCodecTuple(s, getAvailableAudioCodecs());
+	}//---------------------------------------------------;
+	// Checks and Normalizes
+	public static function normalizeArchiverSettings(s:String):String
+	{
+		return parseCodecTuple(s, getAvailableArchivers());
+	}//---------------------------------------------------;
+	
+	// PRE: Settings are VALID
+	public static function getSettingsTuple(s:String):SettingsTuple
+	{
+		var a = s.split(':');
+		return { id:a[0], q:Std.parseInt(a[1])};
+	}//---------------------------------------------------;
+	
+	/**
+	   Parses from ID:QUALITY to proper string
+	   - Capitalize ID
+	   - Range Quality (0-2)
+	   - Null if any Errors
+	**/
+	static function parseCodecTuple(S:String, M:Array<String>):String
+	{
+		var a = S.split(':');
+		if (a.length > 0){
+			var ret = "";
+			var p1 = a[0].toUpperCase();
+			if (M.indexOf(p1)>-1){
+				ret = p1 + ':';
+				if (a[1] != null) {
+					var t = Std.parseInt(a[1]);
+					if (t != null){
+						if (t < 0) t = 0; else if (t>2) t=2;
+						return ret + t;
+					}
+				}
+				return ret + '1';
+			}
+		}
+		return null;
 	}//---------------------------------------------------;
 	
 }// --

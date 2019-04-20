@@ -33,7 +33,7 @@ class TestMain extends BaseApp
 	var PATH_TESTS 	= "a:\\cdcrush_tests"; 		// (folder will be created)
 	// --
 	// Leave these alone:
-	var SOUND_WAV 	= "..\\tests\\sound.wav";
+	var SOUND_WAV 	= "..\\tests\\sound.wav";	// Master sound to test codecs with
 	var PATH_CUE	= "..\\tests\\cd_test.cue";
 	var PATH_TOOLS 	= "..\\tools";
 	
@@ -98,7 +98,8 @@ class TestMain extends BaseApp
 			}
 			return null;
 		};
-		
+		test_CodecMaster().start();
+		return;
 		// Run Tests:
 		test_FFMPEG()
 			.start()
@@ -106,7 +107,8 @@ class TestMain extends BaseApp
 			.then(test_Lossless_Integrity())
 			.then(test_Archivers())
 			.then(test_Split_Join())
-			.then(test_CDParser());
+			.then(test_CDParser())
+			.then(test_CodecMaster());
 	}//---------------------------------------------------;
 
 	
@@ -116,6 +118,30 @@ class TestMain extends BaseApp
 		T.print('Please manually delete the test folder\n');
 		T.printf('  > $PATH_TESTS ~!~\n');
 	}//---------------------------------------------------;
+	
+	
+	
+	function test_CodecMaster()
+	{
+		return new CJob("Codec Master.").addQ((t)->{
+			trace("Archivers" 	, CodecMaster.getAvailableArchivers());
+			trace("Audio Codecs" , CodecMaster.getAvailableAudioCodecs());
+			trace("Normalized Codec Strings");
+			// Test User Params
+			var cc = ['OPUS:1', 'OPUS', 'MP3::', 'MP3:4', 'tak', 'tak:f', 'null:null', 'ne:2:three', 'VORBIS:4'];
+			for (c in cc){
+				var nfo = "";
+				var res = CodecMaster.normalizeAudioSettings(c);
+				if (res == null) 
+					res = "ERROR"; 
+				else
+					nfo = CodecMaster.getAudioQualityInfo(CodecMaster.getSettingsTuple(res));
+				trace('$c  ->  $res  :  $nfo');
+			}
+			t.complete();
+		});
+	}//---------------------------------------------------;
+	
 	
 	
 	/**
@@ -387,7 +413,7 @@ class TestMain extends BaseApp
 		});
 		
 		// - Test FFMPEG codecs
-		var codecs = CodecMaster.getAvailableAudioCodecsID();
+		var codecs = CodecMaster.getAvailableAudioCodecs();
 		for (i in codecs)
 		{
 			// Special, TAK encoding not with FFMPEG
@@ -395,7 +421,7 @@ class TestMain extends BaseApp
 			
 			j.addQ( (t)->{
 				var ac = CodecMaster.audio.get(i);
-				var encstr = CodecMaster.getAudioStr(i, 1);
+				var encstr = CodecMaster.getAudioStr({id:i, q:1});
 				trace('FFMPEG.encodeFromPCM($encstr)');
 				t.syncWith(Ff);
 				var f = '${gen.pcm}_${i}_${ac.ext}';
@@ -416,7 +442,7 @@ class TestMain extends BaseApp
 			trace("FFMPEG.stream_PCMtoEncFile()");
 			var fstream  = Fs.createReadStream(gen.pcm);
 			// Puting a random encoder, encoders already tested
-			var instream = Ff.stream_PCMtoEncFile(CodecMaster.getAudioStr('VORBIS', 0), Path.join(PATH_TESTS, "frompcmstream.ogg"));
+			var instream = Ff.stream_PCMtoEncFile(CodecMaster.getAudioStr({id:'VORBIS', q:0}), Path.join(PATH_TESTS, "frompcmstream.ogg"));
 			t.syncWith(Ff);
 			fstream.pipe(instream);
 			fstream.once("close", ()-> trace('File Stream for "${gen.pcm}" [CLOSE]'));

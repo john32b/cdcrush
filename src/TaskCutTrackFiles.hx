@@ -1,9 +1,9 @@
 package;
 
 import cd.CDTrack;
-import djNode.file.FileCopyPart;
 import djNode.task.CTask;
 import djNode.tools.ArrayExecSync;
+import djNode.tools.FileTool;
 import djNode.tools.LOG;
 import js.node.Path;
 
@@ -16,83 +16,59 @@ import js.node.Path;
  */
 class TaskCutTrackFiles extends CTask 
 {
-
 	public function new() 
 	{
-		super(null, "Cut", "Cutting tracks into separate files");
-	}
+		super("Cutting BIN into Track Files");
+	}//---------------------------------------------------;
 	
 	// Note, gets called regardless of number of tracks
 	override public function start() 
 	{
 		super.start();
 		
-		var p:CDCRUSH.CrushParams = cast jobData;
-		var cd:cd.CDInfos = p.cd;
+		var j:JobCrush = cast parent;
 		
-		var input:String = cd.tracks[0].workingFile;
+		var input = j.cd.tracks[0].workingFile;
 		
 		// No need to cut an already cut CD
 		// Multifiles `workingfile` is already set to proper	
-		if (cd.MULTIFILE)
+		if (j.cd.MULTIFILE)
 		{
 			LOG.log("- No need to cut a multifile cd. Returning");
-			complete();
-			return;
+			return complete();
 		}
 		
 		// No need to copy the bytes to the temp folder, just work from the source
-		if (cd.tracks.length == 1)
+		if (j.cd.tracks.length == 1)
 		{
 			LOG.log("- No need to cut a CD with only 1 track. Returning");
-			complete();
-			return;
+			return complete();
 		}
 		
-		var progressStep:Int = Math.round(100 / cd.tracks.length);
-
+		j.flag_tracksOnTempFolder = true;
+		
+		var progressStep = Math.round(100 / j.cd.tracks.length);
+		
 		// -
-		var ax = new ArrayExecSync(cd.tracks);
-		
-		// This file cutter is ASYNC
-		// So I need a way to manage calls with an array exec sync
-		var fc = new FileCopyPart();
-		
-		fc.events.on("complete", function(err:String){
-			
-			PROGRESS += progressStep;
-			
-			if (err == null){
-				ax.next();
-			}else{
-				fail(err);
-			}
-			
-		});
-			
 		LOG.log(' - Cutting tracks from `$input` to `${p.tempDir}`');
-		ax.queue_action = function(tr:CDTrack)
+		
+		var ax = new ArrayExecSync(j.cd.tracks);
+		ax.queue_complete = complete;
+		ax.queue_action = function(tr:CDTrack) 
 		{
+			LOG.log(' - Cutting Track ${tr.trackNo}');
 			// Set the new working file for the tracks
 			tr.workingFile = Path.join(p.tempDir, tr.getFilenameRaw());
 			var byteStart:Int = tr.sectorStart * cd.SECTOR_SIZE;
-			LOG.log(' - Cutting Track ${tr.trackNo}');
-			fc.start(input, tr.workingFile, byteStart, tr.byteSize, true);
+			FileTool.copyFilePart(input, tr.workingFile, byteStart, tr.byteSize, (s)->{
+				PROGRESS += progressStep;
+				if (s == null) ax.next(); else fail(s);
+			});
 		};
 			
-		ax.queue_complete = function()
-		{
-			complete();
-		};
-		
 		ax.start();
 		
-		killExtra = function()
-		{
-			ax.kill();
-			fc.kill();
-		}
-		
+		killExtra = ()->ax.kill();
 	}//---------------------------------------------------;
 	
 }// --
