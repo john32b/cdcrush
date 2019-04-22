@@ -1,7 +1,8 @@
 package;
 
 import app.EcmTools;
-import app.FFmpegAudio;
+import app.FFmpeg;
+import app.Tak;
 import cd.CDTrack;
 import djNode.task.CTask;
 import djNode.tools.FileTool;
@@ -11,19 +12,16 @@ import js.node.Path;
 
 /**
  *  Restores an encoded track to PCM/BIN
- * 
+ *  PRE::
  *  - Track is on the Temp Folder
  *  - Track.storedFileName is set (e.g. track03.ogg)
  *  - Going to be restored on the Temp Folder
- * ----->
+ *  POST::
  *  - Sets track.workingFile to new file path
  *  - Deletes old file
  */
 class TaskRestoreTrack extends CTask 
 {
-	
-	// Pointer to Job's restore parameters
-	var p:CDCRUSH.RestoreParams;
 	
 	// Pointer to working track
 	var track:CDTrack;
@@ -33,53 +31,80 @@ class TaskRestoreTrack extends CTask
 	var crushedTrackPath:String;
 	
 	// Helper
-	var isFlac:Bool;
+	var isLosslessAudio:Bool;
+	
+	var j:JobRestore;
 	
 	public function new(tr:CDTrack) 
 	{
-		super(null, "Restoring Track " + tr.trackNo);
 		track = tr;
-	}
+		super("Restoring Track " + tr.trackNo);
+	}//---------------------------------------------------;
 	
 	override public function start() 
 	{
 		super.start();
-	
-		p = cast jobData;
-		
-		crushedTrackPath = Path.join(p.tempDir, track.storedFileName);
+		j = cast parent;
+		// -
+		crushedTrackPath = Path.join(j.tempDir, track.storedFileName);
 		// Set the final track pathname now, I need this for later.
-		track.workingFile = Path.join(p.tempDir, track.getFilenameRaw());
+		track.workingFile = Path.join(j.tempDir, track.getFilenameRaw());
+		
+		var trext = Path.extname(track.storedFileName).toLowerCase();
+		isLosslessAudio = ['.flac', '.tak'].indexOf(trext) >= 0;
 		
 		if (track.isData)
 		{
-			isFlac = false;
-			
 			var ecm = new EcmTools(CDCRUSH.TOOLS_PATH);
-				ecm.events.on("progress", onProgress);
-				ecm.events.once("close", onClose);
+				syncWith(ecm);
+				killExtra = ecm.kill;
 				ecm.unecm(crushedTrackPath, track.workingFile);
-				killExtra = function() { ecm.kill(); }	
-		}else{
-			// No need to convert back
-			if (p.flag_encCue)
-			{
-				track.workingFile = crushedTrackPath;
-				complete();
-				return;
-			}
-			
-			isFlac = Path.extname(track.storedFileName) == ".flac";
-			
-			var ffmp = new FFmpegAudio(CDCRUSH.FFMPEG_PATH);
-				ffmp.events.on("progress", onProgress);
-				ffmp.events.once("close", onClose);
-				ffmp.audioToPCM(crushedTrackPath, track.workingFile);
-				killExtra = function() { ffmp.kill(); }	
+			return;
 		}
+
+		// No need to convert back, leave as is
+		// NOTE: It will be moved to output folder later
+		if (j.p.flag_encCue)
+		{
+			track.workingFile = crushedTrackPath;
+			return complete();
+		}
+
+		var F = new FFmpeg(CDCRUSH.FFMPEG_PATH);
+		killExtra = F.kill;
+		syncWith(F);
+		
+		if (trext == ".tak")
+		{
+			var T = new Tak(CDCRUSH.TOOLS_PATH);
+			var inwav = F.stream_WAVtoPCMFile(track.workingFile);
+			var takstr = T.streamDecode(crushedTrackPath);
+			takstr.pipe(inwav);
+			return;
+		}
+		
+		// All other audio extensions use FFMPEG:
+		F.encodeToPCM(crushedTrackPath, track.workingFile);
 		
 	}//---------------------------------------------------;
 	
+	/**
+	   HiJack Complete() to check some things
+	**/
+	override public function complete() 
+	{
+		// Delete Old File
+		if (!CDCRUSH.FLAG_KEEP_TEMP) Fs.unlinkSync(crushedTrackPath);
+	
+		try{
+			if (!track.isData && !isLosslessAudio) correctPCMSize();
+			checkRestoredMD5();
+		}catch (e:String){
+			return fail(e);
+		}
+		
+		super.complete();
+	}//---------------------------------------------------;
 	
 	
 	// Fix the filesize of the restored track
@@ -89,62 +114,23 @@ class TaskRestoreTrack extends CTask
 		LOG.log('+ Correcting PCM Size -- for track ${track.trackNo}');
 		var targetSize = track.byteSize;
 		Fs.truncateSync(track.workingFile, targetSize);
-		#if TEST_EVERYTHING
+		#if EXTRA_TESTS
 			if (targetSize != Fs.statSync(track.workingFile).size)
 				throw "Size mismatch on restoring track to original size for file " + track.workingFile;
 		#end
 	}//---------------------------------------------------;
 	
-	
 	// Check for MD5, auto fail on error
 	function checkRestoredMD5()
 	{
-		#if TEST_EVERYTHING
-		
-		if (isFlac || track.isData)
-		if (track.md5 != null && track.md5.length > 2) {
+		#if EXTRA_TESTS
+		if (isLosslessAudio || track.isData)
+		if (track.md5 != null && track.md5.length > 2) { // >2 because default MD5 string is "-"
 			if (FileTool.getFileMD5(track.workingFile) != track.md5) {
 				throw "Restored Track WRONG MD5 for track " + track.workingFile;
 			}
 		}
-		
 		#end
-	}//---------------------------------------------------;
-	
-	
-	// CLI App progress event
-	function onProgress(p:Int)
-	{
-		PROGRESS = p;// uses setter
-	}//---------------------------------------------------;
-	
-	// CLI App close event
-	function onClose(s:Bool, m:String)
-	{	
-		if (s){
-			
-			deleteOldFile();
-			
-			try{
-				if (!track.isData && !isFlac) correctPCMSize();
-				checkRestoredMD5();
-			}catch (e:String){
-				fail(e);
-				return;
-			}
-			
-			complete();
-			
-		}else{
-			fail(m);
-		}
-	}//---------------------------------------------------;
-	
-	// Delete old files ONLY IF they reside in the TEMP folder!
-	function deleteOldFile()
-	{
-		if (CDCRUSH.FLAG_KEEP_TEMP) return;
-		Fs.unlinkSync(crushedTrackPath);
 	}//---------------------------------------------------;
 	
 }// --

@@ -260,5 +260,10 @@ class FFmpeg implements ISendingProgress
 			_out:app.proc.stdout
 		};
 	}//---------------------------------------------------;
+	
+	public function kill()
+	{
+		if (app != null) app.kill();
+	}//---------------------------------------------------;
 
 }// --

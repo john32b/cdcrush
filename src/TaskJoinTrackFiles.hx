@@ -1,9 +1,10 @@
 package;
 
+import cd.CDInfos;
 import cd.CDTrack;
-import djNode.file.FileCopyPart;
 import djNode.task.CTask;
 import djNode.tools.ArrayExecSync;
+import djNode.tools.FileTool;
 import djNode.tools.LOG;
 import js.node.Fs;
 
@@ -17,89 +18,62 @@ import js.node.Fs;
  */
 class TaskJoinTrackFiles extends CTask 
 {
-
 	var flag_delete_processed:Bool;
-		
+	var j:JobRestore;
+	
 	public function new(delete_old:Bool = true) 
 	{
-		super(null, "Join", "Joining tracks into a single .bin");
+		super("Joining tracks into a single .bin");
 		flag_delete_processed = delete_old;
 	}//---------------------------------------------------;
 	
 	override public function start() 
 	{
 		super.start();
-		
-		var cd:cd.CDInfos = jobData.cd;
+		j = cast parent;
 		
 		// --
-		if (cd.tracks.length == 1)
+		if (j.cd.tracks.length == 1)
 		{
-			complete();
-			return;
+			LOG.log("> No need to Join, already 1 track on the CD");
+			return complete();
 		}
 		
-		var inputs = [];
-		var output = cd.tracks[0].workingFile;
-		var progressStep:Int = Math.round(100 / cd.tracks.length);
-		// --
-		var ax = new ArrayExecSync(cd.tracks);
+		var output = j.cd.tracks[0].workingFile;
+		var progressStep:Int = Math.round(100 / j.cd.tracks.length);
 		
-		// This file cutter is ASYNC
-		// So I need a way to manage calls with an array exec sync
-		var fc = new FileCopyPart();
+		// --
+		var ax = new ArrayExecSync(j.cd.tracks);
+		killExtra = ax.kill;
+		ax.queue_complete = complete;
 		
 		// Current track being processed
 		var last:CDTrack;
-		
-		fc.events.on("complete", function(err:String)
-		{
-			if (last.trackNo > 1)
-			{
-				LOG.log("Joined `Track " + last.trackNo + "` -> into -> `Track 1`");
-				
-				if (flag_delete_processed && !CDCRUSH.FLAG_KEEP_TEMP)
-				{
-					LOG.log("Deleting " + last.workingFile);
-					Fs.unlinkSync(last.workingFile);
-				}
-				
-				last.workingFile = null;
-			}
-			
-			PROGRESS += progressStep;
-			
-			if (err == null){
-				ax.next();
-			}else{
-				fail(err);
-			}
-			
-		});		
-	
+
 		ax.queue_action = function(tr:CDTrack)
-		{
+		{			
 			last = tr;
-			if (tr.trackNo == 1) {
-				ax.next(); 
-				return;
-			}
-			// Skip the first one
-			fc.start(tr.workingFile, output, 0, 0, false);	// False = append data
-		};
-			
-		ax.queue_complete = function()
-		{
-			complete();
+			// Skip the First Track.
+			if (tr.trackNo == 1) return ax.next(); 
+			FileTool.copyFilePart(tr.workingFile, output, 0, 0, (s)->{
+				if (s != null){
+					fail(s);
+				}else{
+					// Track Copied OK :
+					if (last.trackNo > 1) {
+						LOG.log("Joined `Track " + last.trackNo + "` -> into -> `Track 1`");
+						if (flag_delete_processed && !CDCRUSH.FLAG_KEEP_TEMP) {
+							Fs.unlinkSync(last.workingFile);
+						}
+						last.workingFile = null;
+					}
+					PROGRESS += progressStep;
+					ax.next();
+				}
+			});
 		};
 		
 		ax.start();
-				
-		killExtra = function()
-		{
-			ax.kill();
-			fc.kill();
-		}
 	}//---------------------------------------------------;
 	
 }// --

@@ -1,5 +1,6 @@
 package test;
 
+import app.EcmTools;
 import app.FFmpeg;
 import app.FreeArc;
 import app.SevenZip;
@@ -7,11 +8,12 @@ import app.Tak;
 import cd.CDInfos;
 import djNode.BaseApp;
 import djNode.task.CJob;
-import djNode.task.CTestTask;
+import djNode.task.CTask;
 import djNode.tools.FileTool;
 import djNode.tools.HTool;
 import djNode.tools.LOG;
 import djNode.utils.CLIApp;
+import haxe.macro.Expr;
 import js.node.Crypto;
 import js.node.Fs;
 import js.node.Path;
@@ -49,6 +51,7 @@ class TestMain extends BaseApp
 		a_zip:"",
 		a_arc:"",
 		fileR:"",
+		fileR_md5:"",
 	};
 	
 	// Since no operations are going to run simultaneously. I can reuse these objects
@@ -98,8 +101,7 @@ class TestMain extends BaseApp
 			}
 			return null;
 		};
-		test_CodecMaster().start();
-		return;
+
 		// Run Tests:
 		test_FFMPEG()
 			.start()
@@ -107,9 +109,11 @@ class TestMain extends BaseApp
 			.then(test_Lossless_Integrity())
 			.then(test_Archivers())
 			.then(test_Split_Join())
+			.then(test_ECM())
 			.then(test_CDParser())
 			.then(test_CodecMaster());
 	}//---------------------------------------------------;
+
 
 	
 	function post()
@@ -119,8 +123,9 @@ class TestMain extends BaseApp
 		T.printf('  > $PATH_TESTS ~!~\n');
 	}//---------------------------------------------------;
 	
-	
-	
+	/**
+	 * Small tests
+	 */
 	function test_CodecMaster()
 	{
 		return new CJob("Codec Master.").addQ((t)->{
@@ -132,16 +137,13 @@ class TestMain extends BaseApp
 			for (c in cc){
 				var nfo = "";
 				var res = CodecMaster.normalizeAudioSettings(c);
-				if (res == null) 
-					res = "ERROR"; 
-				else
-					nfo = CodecMaster.getAudioQualityInfo(CodecMaster.getSettingsTuple(res));
+				if (res == null) res = "ERROR"; 
+				else nfo = CodecMaster.getAudioQualityInfo(CodecMaster.getSettingsTuple(res));
 				trace('$c  ->  $res  :  $nfo');
 			}
 			t.complete();
 		});
 	}//---------------------------------------------------;
-	
 	
 	
 	/**
@@ -224,11 +226,11 @@ class TestMain extends BaseApp
 			});
 		});
 		j.addQ((t)->{
-			md5 = FileTool.getFileMD5(gen.fileR);
+			gen.fileR_md5 = FileTool.getFileMD5(gen.fileR);
 			var md5_j = FileTool.getFileMD5(joined);
-			trace('Original File MD5: $md5');
+			trace('Original File MD5: ${gen.fileR_md5}');
 			trace('Joined   File MD5: $md5_j');
-			if (md5 != md5_j){
+			if (gen.fileR_md5 != md5_j){
 				throw " Joined file different MD5 hash";
 			}else{
 				t.complete();
@@ -446,6 +448,35 @@ class TestMain extends BaseApp
 			t.syncWith(Ff);
 			fstream.pipe(instream);
 			fstream.once("close", ()-> trace('File Stream for "${gen.pcm}" [CLOSE]'));
+		});
+		
+		return j;
+	}//---------------------------------------------------;
+	
+	
+	function test_ECM()
+	{
+		var j = new CJob("ECM-UNECM Test");
+		var E = new EcmTools(PATH_TOOLS);
+		
+		var ecmp = "";
+		var unecmp = "";
+		
+		j.addQ('-> ECM ..', (t)->{
+			ecmp = gen.fileR + ".ecm";
+			t.syncWith(E);
+			E.ecm(gen.fileR, ecmp);
+		});
+		
+		j.addQ('-> UNECM ..', (t)->{
+			t.syncWith(E);
+			unecmp = gen.fileR + ".unecm";
+			E.unecm(ecmp, unecmp);
+		});
+		
+		j.addQ('Check ..', (t)->{
+			// NOTE: In order to check MD5 I need to test with a real BIN track, else MD5 are not the same
+			t.complete();
 		});
 		
 		return j;

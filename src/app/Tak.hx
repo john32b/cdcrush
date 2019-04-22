@@ -70,4 +70,8 @@ class Tak implements ISendingProgress
 		return app.proc.stdout;
 	}//---------------------------------------------------;
 	
+	public function kill()
+	{
+		if (app != null) app.kill();
+	}//---------------------------------------------------;
 }// --

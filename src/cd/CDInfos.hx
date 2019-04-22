@@ -251,8 +251,9 @@ class CDInfos
 			{
 				var fileType:String = switch(Path.extension(tr.trackFile).toLowerCase()){
 					case "ogg"  : "OGG";
-					case "flac" : "FLAC";
 					case "mp3"  : "MP3";
+					case "flac" : "WAVE";
+					case "tak"  : "WAVE";
 					default : "BINARY";
 				}
 				

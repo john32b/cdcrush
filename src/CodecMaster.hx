@@ -121,6 +121,19 @@ class CodecMaster
 		return new SevenZip(CDCRUSH.TOOLS_PATH);
 	}//---------------------------------------------------;
 	
+	public static function getArchiverByExt(ext:String):Archiver
+	{
+		for (k => v in arc)
+		{
+			if (v.ext == ext.toLowerCase())
+			{
+				return getArchiver(k);
+			}
+		}
+		
+		return null;
+	}//---------------------------------------------------;
+	
 	public static function getArcExt(id:String)
 	{
 		return arc.get(id).ext;
@@ -139,12 +152,10 @@ class CodecMaster
 	public static function getAudioQualityInfo(a:SettingsTuple):String
 	{
 		var c = audio.get(a.id);
-		
 		if (c.qReal == null) // LOSSLESS
 		{
 			return c.name;
 		}
-		
 		// e.g. "Opus 96k Vbr";
 		return c.name + ' ' + c.qName[a.q] + c.p;
 	}//---------------------------------------------------;
@@ -156,6 +167,11 @@ class CodecMaster
 			return c.encstr;
 		else
 			return c.encstr + c.qReal[a.q];
+	}//---------------------------------------------------;
+	
+	public static function getAudioExt(id:String):String
+	{
+		return audio.get(id).ext;
 	}//---------------------------------------------------;
 	
 	public static function getAvailableArchivers():Array<String>

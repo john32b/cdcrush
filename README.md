@@ -1,19 +1,21 @@
 
-# CDCRUSH nodeJS
+# CDCRUSH (node.js)
 
-**Name**: cdcrush, *Highy compress cd-image games*\
-**Author:** John Dimi :computer:, <johndimi@outlook.com> *twitter*: [@jondmt](https://twitter.com/jondmt)\
-**Project Page and Sources:** [https://github.com/johndimi/cdcrush](https://github.com/johndimi/cdcrush)\
-**Language:** HAXE compiled to nodeJS, **Licence:** MIT\
-**Version:** 1.4 **Platform:** Windows
+**Name**: CDCRUSH, *Highly compress cd-image games*  
+**Author:** John Dimi :computer:, <johndimi@outlook (.) com> *twitter*: [@jondmt](https://twitter.com/jondmt)  
+**Project Page and Sources:** [https://github.com/johndimi/cdcrush](https://github.com/johndimi/cdcrush)  
+**Language:** HAXE compiled to Node.js, **License**: MIT  
+**Version:** 1.4 **Platform:** Windows  
 **Sister Project**: [cdcrush.net](https://github.com/johndimi/cdcrush.net)
+
+
 
 
 ## :mega: What is it
 
 ![CDCRUSH LOGO](images/logo.png)
 
-**cdcrush** is a tool that can highly compress **CD based games** *( playstation 1, Pc-engine, etc )* for storage / sharing purposes. **ALSO** it can encode the audio tracks of a CD and create a `.cue` file with *(mp3/ogg/flac)* tracks for use in emulators.
+**CDCRUSH** is a tool that can highly compress **CD based games** *( PlayStation 1, Pc-engine, etc. )* for storage / sharing purposes. **ALSO** it can encode the audio tracks of a CD and create a `.cue` file with *(mp3/ogg/flac)* tracks for use in emulators.
 
 ![Crushing a CD demo](images/crush_demo.gif)
 
@@ -21,29 +23,29 @@
 
 - The program separates the tracks of a CD image and compress them separately.
 - For **data** tracks it will use **ecm tools** to remove Error Correction/Detection Codes (ECC/EDC) data from the sectors. *( redundant data )*
-- For **audio** tracks, it will use an encoder of your choice. You can select a lossy encoder like (**opus** or **vorbis**) to produce a decent quality audio file with a much smaller filesize compared to the uncompressed PCM audio original.
+- For **audio** tracks, it will use an encoder of your choice. You can select a lossy encoder like (**opus** or **vorbis**) to produce a decent quality audio file with a much smaller file size compared to the uncompressed PCM audio original.
 - **OR** you can choose to encode audio with **FLAC**  which is lossless.
 - Finally it compresses everything into a single `.arc` archive using the **FreeArc** archiver.
- 
+
  **⇒ Restoring a crushed CD :**
- 
+
 **cdcrush**  can  **restore** the crushed CD image back to it's original form, a **.bin/.cue** image that is ready to be used however you like.  
 
 **NOTE**: Archives with the audio tracks encoded with **FLAC**, will be restored to a 1:1 copy, byte for byte, of the original source CD
- 
+
  ![Restoring a CD demo](images/restore_demo.gif)
- 
-### Some examples of game sizes archived with 7zip and cdcrush:
 
-| Title             |  Raw    | 7z      | cdcrush-ogg|  cdcrush-flac |
-| ----------------- | ------- | ------  | -----------  | -------|
-| Tomb Raider 2     |  710MB  |  ~ 455MB  | **150MB**  | **320MB** |
-| Wipeout 3         |  577MB  |  ~ 490MB  | **77MB**   | .|
-| Die Hard Trilogy  |  532MB  |  ~ 450MB  | **71MB**   | .|
-| Alien Trilogy     |  507MB  |  ~ 440MB  | **88MB**   | .|
+### Compression comparisons of some games:
 
-<sup>Those games feature many CD-DA audio tracks</sup>
-<sup>7zip maximum compression default template</sup>
+| Name | Raw Size | 7-zip <sup>0</sup> | CDCRUSH Lossless <sup>1</sup>| CDCRUSH Lossy <sup>2</sup>|
+|------|-----------|--------------------------|-----------------|-------------------|
+| Wipeout XL| 680MB | 567MB | **407MB** | **72MB**|
+| Tomb Raider | 505MB | 306MB | **275MB** | **169MB**|
+| PO'ed | 139MB | 50MB | **39MB** | **18MB**|
+
+<sup>**0**: Direct compression of the CD Image with 7zip. Profile : Maximum Compression</sup>  
+<sup>**1**: Audio : TAK , Archive : FreeArc High </sup>  
+<sup>**2**: Audio : Ogg Vorbis 64k , Archive : FreeArc High </sup>
 
 
 ## :paperclip: General Info

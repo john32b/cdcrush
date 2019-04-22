@@ -27,7 +27,6 @@ class TaskCutTrackFiles extends CTask
 		super.start();
 		
 		var j:JobCrush = cast parent;
-		
 		var input = j.cd.tracks[0].workingFile;
 		
 		// No need to cut an already cut CD
@@ -50,7 +49,7 @@ class TaskCutTrackFiles extends CTask
 		var progressStep = Math.round(100 / j.cd.tracks.length);
 		
 		// -
-		LOG.log(' - Cutting tracks from `$input` to `${p.tempDir}`');
+		LOG.log(' - Cutting tracks from `$input` to `${j.tempDir}`');
 		
 		var ax = new ArrayExecSync(j.cd.tracks);
 		ax.queue_complete = complete;
@@ -58,8 +57,8 @@ class TaskCutTrackFiles extends CTask
 		{
 			LOG.log(' - Cutting Track ${tr.trackNo}');
 			// Set the new working file for the tracks
-			tr.workingFile = Path.join(p.tempDir, tr.getFilenameRaw());
-			var byteStart:Int = tr.sectorStart * cd.SECTOR_SIZE;
+			tr.workingFile = Path.join(j.tempDir, tr.getFilenameRaw());
+			var byteStart:Int = tr.sectorStart * j.cd.SECTOR_SIZE;
 			FileTool.copyFilePart(input, tr.workingFile, byteStart, tr.byteSize, (s)->{
 				PROGRESS += progressStep;
 				if (s == null) ax.next(); else fail(s);
@@ -68,7 +67,7 @@ class TaskCutTrackFiles extends CTask
 			
 		ax.start();
 		
-		killExtra = ()->ax.kill();
+		killExtra = ax.kill;
 	}//---------------------------------------------------;
 	
 }// --

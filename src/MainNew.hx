@@ -9,13 +9,15 @@ import djNode.tools.LOG;
  */
 class MainNew extends BaseApp 
 {
+	static function main() new MainNew();
+	
 	// Deco line used as separator in between job infos
 	static inline var LINE_WIDTH:Int = 30;
 	
 	// Current active job
 	var job:CJob;
 	
-override function init() 
+	override function init() 
 	{		
 		// --
 		PROGRAM_INFO.name = CDCRUSH.PROGRAM_NAME;
@@ -38,9 +40,9 @@ override function init()
 		
 		// --
 		ARGS.Options = [
-			['e', 'Encoded Audio/Cue', '<Restore> <Crush> to encoded audio files/.cue'],
-			['b', 'SubFolder', '<Restore> to a subfolder in output path (autonamed to CD title)'],
-			['s', 'Force Single Bin', '<Restore> to a single .bin/.cue '],
+			['nosub', 'No SubFolder', 'On <Restore>, do not create a subfolder in <output> for the new files'],
+			['enc', 'Encoded Audio/Cue', '<Restore> <Crush> to encoded audio files/.cue'],
+			['sb', 'Force Single Bin', '<Restore> to a single .bin/.cue '],
 			
 			['ac', 'CODEC:QUALITY , Audio compression for audio tracks', 
 					"Codecs : flac , opus , vorbis , mp3 , tak : (Defaults to flac)\n" +
@@ -51,9 +53,9 @@ override function init()
 					"Compression : 0 low, 1 normal, 2 high : (Defaults to 1)\n" +
 					"e.g. -dc zip , -dc arc:2", 'yes'],
 					
-			['t',  'Threads', 'Number of maximum threads allowed for operations (1-8)', 'yes'],
+			['th',   'Threads', 'Number of maximum threads allowed for operations (1-8) (Default = ${CDCRUSH.MAX_TASKS})', 'yes'],
 			['tmp', 'Temp Folder', 'Set a custom temp folder for operations', 'yes'],
-			['log', 'Set Log File', 'Produce a log file to a path.(e.g. -log c:\\log.txt)', 'yes']
+			['nfo', 'Save Info', 'Produce an info .txt file next to the produced files\ncontaining general infos, like track MD5 and sizes']
 		];
 		
 		// LOG.pipeTrace();
@@ -62,7 +64,6 @@ override function init()
 			LOG.setLogFile("a:\\CDCRUSH_LOG.txt", true);
 		#end
 		
-		FLAG_USE_SLASH_FOR_OPTION = true;
 		super.init();
 	}//---------------------------------------------------;
 	
@@ -72,25 +73,61 @@ override function init()
 		printBanner();
 		
 		#if debug
-		T.printf("~red~DEBUG BUILD~!~\n");
+			T.printf("~red~DEBUG BUILD~!~\n");
+			//CDCRUSH.FLAG_KEEP_TEMP = true;
 		#end
-		
-		if (argsOptions.log != null)
-		{
-			LOG.setLogFile(argsOptions.log);
-		}
-		
+				
 		// If null, it defaults
-		CDCRUSH.init(argsOptions.temp);
+		CDCRUSH.init(argsOptions.tmp);
 		
-		if (argsOptions.threads != null)
+		if (argsOptions.th != null)
 		{
-			CDCRUSH.setThreads(Std.parseInt(argsOptions.threads));
+			CDCRUSH.setThreads(Std.parseInt(argsOptions.th));
 		}
 		
+		CDCRUSH.FLAG_NFO = argsOptions.nfo;
 		
+		var AC, DC:String; AC = DC = null;
+		
+		if (argsOptions.ac != null)
+		{
+			AC = CodecMaster.normalizeAudioSettings(argsOptions.ac);
+			if (AC == null) exitError("Invalid Audio Codec String.",true);
+		}		
+		
+		if (argsOptions.dc != null)
+		{
+			DC = CodecMaster.normalizeArchiverSettings(argsOptions.dc);
+			if (DC == null) exitError("Invalid Archiver String", true);
+		}
+		
+		if (argsAction == "c")
+		{
+			trace("CRUSHING A CD");
+			var j = new JobCrush({
+				inputFile:argsInput[0],
+				outputDir:argsOutput,
+				ac:AC,
+				dc:DC,
+				flag_convert_only:argsOptions.enc
+			});
+			j.MAX_CONCURRENT = CDCRUSH.MAX_TASKS;
+			j.start();
+		}else
+		
+		if (argsAction == "r")
+		{
+			trace("RESTORING A CD");
+			var j = new JobRestore({
+				inputFile:argsInput[0],
+				outputDir:argsOutput,
+				flag_forceSingle:argsOptions.sb,
+				flag_nosub:argsOptions.nosub,
+				flag_encCue:argsOptions.enc
+			});
+			j.MAX_CONCURRENT = CDCRUSH.MAX_TASKS;
+			j.start();
+		}
 	}//---------------------------------------------------;
-	// --
-	static function main() new MainNew();
-	
+
 }// --

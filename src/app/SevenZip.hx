@@ -23,6 +23,7 @@
  * ---------------------------------------*/
 
 package app;
+import djNode.tools.HTool;
 import djNode.tools.LOG;
 import js.node.Fs;
 import js.node.Path;
@@ -182,7 +183,7 @@ class SevenZip extends Archiver
 	**/
 	public static function getCompressionString(l:Int = 4)
 	{
-		if(l<1) l=1; else if(l>9) l=9;
+		HTool.inRange(l, 1, 9);
 		return '-mx${l}';
 	}//---------------------------------------------------;
 	
