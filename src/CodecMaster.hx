@@ -144,6 +144,11 @@ class CodecMaster
 		return arc.get(a.id).cStr[a.q];
 	}//---------------------------------------------------;
 	
+	public static function getArchiverInfo(a:SettingsTuple):String
+	{
+		return arc.get(a.id).name + ' ' + ['low', 'medium', 'high'][a.q];
+	}//---------------------------------------------------;
+	
 	/**
 	   Return User Readable string from CodecID/Quality Combo
 	   @param	codecID

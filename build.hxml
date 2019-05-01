@@ -1,9 +1,35 @@
-# Build release to bin folder
+# Build npm build to bin folder
 
 -lib hxnodejs
 -lib djnode
 -cp src
 -main Main
--js bin/cdcrush.js
--D terminal
+-js bin/npmbuild.js
 -D windows
+# -D js-es=6 | does not work with uglify.js
+
+--next
+
+# Builds debug to bin folder (app.js is used for development)
+# Note: The haxeDevelop project file builds the same configuration for debug
+-debug
+-lib hxnodejs
+-lib djnode
+-lib jstack
+-cp src
+-main Main
+-js bin/app.js
+-D windows
+-D EXTRA_TESTS
+
+
+
+# DEFINES :
+	
+# . STANDALONE
+#	Makes TOOLS path './tools'
+
+# . EXTRA_TESTS
+#   - Enable Tests (-test parameter) and Make Hash checks when restoring tracks`
+#   - Useful for development
+

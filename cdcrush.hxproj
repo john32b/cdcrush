@@ -22,7 +22,7 @@
     <option directives="windows&#xA;EXTRA_TESTS" />
     <option flashStrict="False" />
     <option noInlineOnDebug="False" />
-    <option mainClass="MainNew" />
+    <option mainClass="Main" />
     <option enabledebug="False" />
     <option additional="" />
   </build>
@@ -36,6 +36,7 @@
   <compileTargets>
     <compile path="src\test\Tests2.hx" />
     <compile path="src\MainNew.hx" />
+    <compile path="src\Main.hx" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>

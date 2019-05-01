@@ -1,6 +1,5 @@
 package;
 import app.Archiver;
-import app.FreeArc;
 import djNode.task.CJob;
 import djNode.task.CTask;
 import djNode.tools.FileTool;
@@ -23,13 +22,19 @@ class JobRestore extends CJob
 	// The running parameters
 	var p:RestoreParams;
 	
-	// Used for reporting back to user
+	// Read by the UI:
+	//
+	// What file was created (full path)
 	public var createdCueFile:String;
+	
+	public var final_size:Float = 0;	// Restored Size
+	public var original_size:Float = 0;	// Archive Size
 	
 	// --
 	public function new(P:RestoreParams)
 	{
 		super("restore");
+		info = 'Restoring : [' + Path.basename(P.inputFile) + ']';
 		p = P;
 	}//---------------------------------------------------;
 	
@@ -73,6 +78,7 @@ class JobRestore extends CJob
 			var arc:Archiver = CodecMaster.getArchiverByExt(Path.extname(p.inputFile));
 			t.syncWith(arc);
 			t.killExtra = arc.kill;
+			original_size = Fs.statSync(p.inputFile).size;
 			arc.extract(p.inputFile, tempDir);
 		});
 		
@@ -82,6 +88,7 @@ class JobRestore extends CJob
 		addQ('-Preparing', (t)->{
 			cd = new CDInfos();
 			cd.jsonLoad(Path.join(tempDir, CDCRUSH.CDCRUSH_SETTINGS));
+			final_size = cd.CD_TOTAL_SIZE;
 			// -- Restore
 			for (track in cd.tracks) {
 				// Note: <flag_encCue> will be handled from inside the task
@@ -167,7 +174,7 @@ class JobRestore extends CJob
 			{
 				var nfoFile = FileTool.getPathNoExt(createdCueFile) + CDCRUSH.INFO_SUFFIX + '.txt';
 				var data = cd.getDetailedInfo();
-					data += '\n- CDCRUSH (nodejs) version : ' + CDCRUSH.PROGRAM_VERSION;
+					data += '\n; CDCRUSH (nodejs) version : ' + CDCRUSH.PROGRAM_VERSION;
 				Fs.writeFileSync(nfoFile, data);					
 			}
 			t.complete();

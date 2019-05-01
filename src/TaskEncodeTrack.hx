@@ -19,7 +19,7 @@ import js.node.Path;
  * CHANGES:
  *  - track.workingFile -> points to the new encoded file path
  *  - track.storedFileName -> is set to just a filename. e.g (track02.ogg) How it's saved in the archive?
- *  - file `track.workingFile` is deleted
+ *  - old file `track.workingFile` is deleted
  * ...
  */
 

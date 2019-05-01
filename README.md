@@ -5,37 +5,33 @@
 **Author:** John Dimi :computer:, <johndimi@outlook (.) com> *twitter*: [@jondmt](https://twitter.com/jondmt)  
 **Project Page and Sources:** [https://github.com/johndimi/cdcrush](https://github.com/johndimi/cdcrush)  
 **Language:** HAXE compiled to Node.js, **License**: MIT  
-**Version:** 1.4 **Platform:** Windows  
+**Version:** 1.5 **Platform:** Windows  
 **Sister Project**: [cdcrush.net](https://github.com/johndimi/cdcrush.net)
-
-
-
 
 ## :mega: What is it
 
-![CDCRUSH LOGO](images/logo.png)
+![CDCRUSH LOGO](images/logo.png)  
 
-**CDCRUSH** is a tool that can highly compress **CD based games** *( PlayStation 1, Pc-engine, etc. )* for storage / sharing purposes. **ALSO** it can encode the audio tracks of a CD and create a `.cue` file with *(mp3/ogg/flac)* tracks for use in emulators.
+**Cdcrush** is a tool that can highly compress **CD based games**, *(PS1, PC-Engine, PC, etc.)*. Reduces size of data and audio tracks. Ideal for **storage/sharing**.  
+Then it can **restore** a compressed archive back to a CD Image `.cue/.bin`. Also you can use a **lossless audio codec** to store/restore a `1:1` ,byte to byte, copy of a CD Image.
 
-![Crushing a CD demo](images/crush_demo.gif)
+:hammer_and_wrench: **In Detail**:  
+- Applies **ECM tools** to DATA tracks. This removes redundant data *(Error Correction/Detection Codes)* from the CD sectors. This data can then be reconstructed
+- Encodes **CDDA** audio tracks with lossy or lossless codecs *(Vorbis, Opus, FLAC, TAK)*
+- Puts everything into an archive *(7zip, FreeArc)*
+- Then the process can be reversed and the original **.bin/.cue** file is reconstructed
 
-**⇒ How does it compress/crush a CD :** 
+![Crushing a CD demo](images/crush_demo.gif)  
 
-- The program separates the tracks of a CD image and compress them separately.
-- For **data** tracks it will use **ecm tools** to remove Error Correction/Detection Codes (ECC/EDC) data from the sectors. *( redundant data )*
-- For **audio** tracks, it will use an encoder of your choice. You can select a lossy encoder like (**opus** or **vorbis**) to produce a decent quality audio file with a much smaller file size compared to the uncompressed PCM audio original.
-- **OR** you can choose to encode audio with **FLAC**  which is lossless.
-- Finally it compresses everything into a single `.arc` archive using the **FreeArc** archiver.
+### Use cases
 
- **⇒ Restoring a crushed CD :**
+- **BACKUP** a 1:1 copy of CD images for **cold storage**. If you choose to encode audio tracks with `FLAC` or `TAK`, then the restoration will be the same as the source down to the last byte. This method is **more efficient** than directly compressing a cd image with a data archiver (*like 7zip*)
+- **Highly Compress** your personal collection of CD  games for storage. You can choose a lossy audio codec to greatly reduce the filesize of some games that feature many audio tracks. The audio will still sound great because modern audio codecs do a decent job at compressing audio.
+- **Convert** CD images that include multiple audio tracks to **.cue/.bin + encoded audio tracks**, using an audio codec of your choosing. Some emulators *like mednafen* support loading these type of `.cue` files.
 
-**cdcrush**  can  **restore** the crushed CD image back to it's original form, a **.bin/.cue** image that is ready to be used however you like.  
+ ![Restoring a CD demo](images/restore_demo.gif)  
 
-**NOTE**: Archives with the audio tracks encoded with **FLAC**, will be restored to a 1:1 copy, byte for byte, of the original source CD
-
- ![Restoring a CD demo](images/restore_demo.gif)
-
-### Compression comparisons of some games:
+### :chart: Compression comparisons of some games:
 
 | Name | Raw Size | 7-zip <sup>0</sup> | CDCRUSH Lossless <sup>1</sup>| CDCRUSH Lossy <sup>2</sup>|
 |------|-----------|--------------------------|-----------------|-------------------|
@@ -54,101 +50,91 @@
   - [ImgBurn](http://imgburn.com), free but not open source.
 - This is a **CLI** application. Some basic CLI knowledge is required. 
 - There is also a [dotNet version of cdcrush](https://github.com/johndimi/cdcrush.net) it's simpler to use, but it doesn't support batch operations.
-- Compressing a CD with **cdcrush** produces an archive file with the `.arc` extension. This is the same extension the archiver *freearc* uses.
+- When selecting **data compression**, FreeArc offers the best ratios *(the default)*
 
 ## :large_blue_diamond: Installing cdcrush
 
-1. Get [nodeJS](https://nodejs.org/en/) (version 8+) and make sure **npm** is also installed *(NodeJs installer should install npm)*
-2. On a terminal type : `npm install -g cdcrush`\
-This will install cdcursh globally and you can use it from anywhere.
-3. Get and Install [ffmpeg](http://ffmpeg.org/). It is a free and open source program required to encode audio tracks.\
+1. Get [nodeJS](https://nodejs.org/en/) *(version 10+)* and make sure **npm** is also installed *(NodeJs installer should install npm)*
+2. On a terminal type : `npm install -g cdcrush`  
+*This will install cdcrush globally and you can use it from anywhere.*
+3. Cdcrush needs [ffmpeg](http://ffmpeg.org/) to be set on the user/system path. It is a free and open source program required to encode audio tracks.  
 :warning: **FFmpeg NEEDS to be set on PATH** . The easiest way to do this is to copy `ffmpeg.exe` into your `c:\windows` folder. 
 4. That's it. **cdcrush** is ready to go.
 
-![cdcrush called with no arguments](images/init_screen.png)\
+![cdcrush called with no arguments](images/init_screen.png)  
 <sup> Calling cdcrush alone doesn't do much, you need to define some arguments</sup>
 
 
 ## :vertical_traffic_light: Running, Program arguments
 
-After installing **cdcrush** with npm, you can run it from anywhere in a terminal by typing\
+After installing **cdcrush** with npm, you can run it from anywhere in a terminal by typing  
 **`cdcrush`**
 
-The basic format of arguments is:\
+The basic format of arguments is:  
 **`cdcrush <input files> <action> <options> -o <output dir>`**
 
-*You can always run `cdcrush -help` for a quick help.*
+*You can run `cdcrush -help` for a quick help.*
 
 ### :file_folder: Input / Output
 
-- **Input Files** ⇒ You can use `.cue` or `.arc` files. Wildcards are supported. `*.cue, *.*`
-- **Output Dir** ⇒ Set with `-o` followed by `output dir`\
-Setting an output directory is **optional**. If you skip it, it will automatically be set to the same folder as the **input file**.
-- **Examples**\
-`cdcrush *.arc -o c:\games`  *To restore multiple files on same folder as input file*\
-`cdcrush game1.arc game2.arc -o c:\games`*To restore selected files into c:\games*
+- **Input Files** ⇒ You can use `.cue` or `[.arc | .7z | .zip ]` files. Wildcards are supported. `*.cue, *.*`
+- **Output Dir** ⇒ Set with `-o` followed by `output dir`  
+  Setting an output directory is **optional**. If you skip it, it will automatically be set to the same folder as the **input file**.
 
-### :green_book: ACTIONS 
+*e.g.*  
+  `cdcrush *.arc -o c:\games`  *To restore multiple files on same folder as input file*  
+  `cdcrush game1.zip game2.arc -o c:\games`*To restore selected files into c:\games*
+
+### :green_book: Actions
 You can only set **one** action at a time :
--  :arrows_clockwise: **Restore** ⇒ Set with **`r`**\
-Will restore an archive back to `cue/bin` files.
-- :cd: **Crush** ⇒ Set with **`c`**\
-Will compress a `cue/bin` CD into an `.arc` cdcrush archive. 
-- :warning: You can **skip** setting an action and it will be auto guessed from the inut file extension 
-`.arc` will autoselect **restore** and `.cue` will autoselect **crush** actions
+- :arrows_clockwise: **Restore** ⇒ Set with **`r`**  
+  Will restore an archive back to `cue/bin` files.
 
-e.g.
-`cdcrush r game.arc` ⇒ *will restore game.arc back to bin/cue*\
-`cdcrush game.arc` ⇒ *will also restore game.arc back to bin/cue. The action was guessed from the filename*
+- :cd: **Crush** ⇒ Set with **`c`**  
+  Will compress a `cue/bin` CD into a cdcrush archive. *(.arc,.7z,.zip)*
 
-### :orange_book: OPTIONS
+- :warning: You can **skip** setting an action and it will be auto guessed from the input file extension 
+  
 
-You can set as many options as you'd like.
+*e.g.*  
+ `cdcrush r game.arc` ⇒ *will restore game.arc back to bin/cue*  
+ `cdcrush game.7z` ⇒ *will also restore game.arc back to bin/cue. The action was guessed from the filename*  `cdcrush game.cue` ⇒ *will crush a game with the default parameters. Action was guessed from the filename*
 
-- **Subfolder** ⇒ set with `-folder`\
-Only works with **RESTORE**. Will **restore** an archive to a **subfolder** in the **output dir**\
-e.g. `cdcrush game.arc -folder -o c:\games` ⇒\
-Will create the folder `c:\games\game_(r)` and will restore the CD there.
+### :orange_book: Options
 
-- **Encoded Audio Files/Cue** ⇒ set with `-enc`\
-Will **restore** or **crush** into a `.cue` with encoded audio tracks. This is to use with some emulators that support this kind of `.cue` CDs\. Works with **restore**  and **crush**.  **Autocreates subfolder** on the output dir. e.g.\
-`cdcrush game.cue -enc` ⇒ *Will encode all audio tracks and create a new .cue file in a subdirectory*
+You can set multiple options :
 
-- **Force Single Bin** ⇒ set with `-single`\
-Works in **RESTORE** only. Will produce a **SINGLE** .bin file even if the source CD had multiple .bin files. (*Cannot be used with `-enc`*)
-
-- **Audio Codec** ⇒ set with `-ac` followed by `codec id`\
-:warning: if you don't set an audio codec it defaults to `flac`
-Codec IDs:
-  - `flac` : Flac Lossless. Using this, you can store a 1:1 lossless copy of the entire CD
-  - `opus` : Opus Ogg codec with vbr\*, is an advanced codec and can produce really nice quality audio even at low bitrates.
-  - `vorbis`: Vorbis Ogg codec with vbr\* , slightly inferior to Opus, but it is compatible with emulators running CUE files with Vorbis encoded audio.
-  - `mp3` : MP3 with vbr\* , is not recommended but it's there.\
-<sup>vbr = variable bit rate</sup>
-
-- **Audio Quality** ⇒ set with `-aq` followed by a number `0-10`. \
-0 is the lowest quality and 10 is the highest quality. Applicable in lossy codecs as `mp3`,`opus` and `vorbis`. **Flac** doesn't require this option.\
-:warning: If you don't set this while you select a lossy codec, it will **default to (4)**
-
-- **Compression Level** ⇒ set with `-cl` followed by a number `0-9`.\
-Sets the compression level of the final archive on the **crush** operations. \
-`0` is the fastest but offers minimum compression
-`9` offers the best compression, but requires a **:bomb: HUGE AMOUNT OF RAM** for both compressing and decompression.  *(don't ever use)*
-:pushpin: The **default value** is `4` which offers a good compression ratio vs memory usage and time required.
-
-- **Temp Folder** ⇒ set with `-temp` followed by a `path`\
-Sets the temp folder for use in operations. **It defaults** to the OS default `%TEMP%` folder. Useful if you want to use a ramdrive. Make sure it can hold up to 1.2GB of data.
-
-- **Max Threads** ⇒ set with `-threads` followed by a number `1-8`\
-Set the maximum number of concurrent processes for encoding tracks. **Defaults to 2** Don't set this bigger than the number of logical cores you  have.
-
-- **Log File** ⇒ set with `-log` followed by a `file` (*the file will be created*)\
-Will log everything to that file, updating it in real time. Also you can see the checksums of the tracks in that log file. **Defaults to no log file**
+- **Audio Codec** ⇒ set with `-ac`, followed by `CODEC ID : QUALITY`  <works with crush>   
+  :warning: Defaults to `FLAC`  
+   Sets the Audio Codec / Quality for the audio tracks when crushing a cd.  
+  Codec IDs:  `FLAC` , `OPUS`, `MP3`, `VORBIS`, `TAK`  
+  Codec Quality : A number from `0` to `2` *( 0 = low quality, 1 = normal quality, 2 = high quality )*  *(Note FLAC and TAK ignore the quality, since they are lossless)*  
+  *e.g.* `-ac OPUS` , `-ac VORBIS:0`, `-ac TAK` , `-ac MP3:2` *(Skipping a quality it defaults to `:1`)*
+- **Data Compression** ⇒ set with `-dc` followed by `ARCHIVER ID : LEVEL` <works with crush>  
+    :warning: Defaults to `ARC:1`  
+    Sets the Archiver and Compression level to be used when crushing a cd.  
+  Archiver IDs : `ARC` , `7Z`, `ZIP`  
+  Level : A number from `0` to `2` *( 0 = low level, 1 = normal level, 2 = high level)*  *(0 is faster but produces bigger archivers, 2 is the slowest and produces smaller archives)*  
+  *e.g.* `-dc ARC:2` , `-dc ZIP`, `-dc 7Z:2'`  *(Skipping a level it defaults to `:1`)*
+- **No Subfolder** ⇒ set with `-nosub` *<Works with restore>*  
+  By default restoring a cd will put it into a subfolder on the output path. Set this flag to skip creating a subfolder and create the files directly to the output folder.
+- **Encoded Audio Files/Cue** ⇒ set with `-enc` *<Works with restore and crush>*  
+  Produces a `.cue` with encoded audio tracks.  **Auto-creates subfolder** on the output dir.   
+  :information_source: **Check the section below for more info **  
+  e.g. `cdcrush game.cue -ac VORBIS:1 -enc` ⇒ Will encode all audio tracks and create new .cue/.bin/.audio files in a subdirectory.
+- **Merge tracks** ⇒ set with `-merge`  *<Works with restore>*  
+Will merge tracks and produce a **single** `.bin` file even if the source CD had multiple .bin files.
+- **Save Infos** ⇒ set with `-nfo`  <Works with restore and crush>  
+Produces a `.txt` file alongside the output file with some information on the operation, like filesize and track checksums.
+- **Temp Folder** ⇒ set with `-tmp` followed by a valid writable `path`  
+  :warning: *(Advanced Feature)*, Sets the temp folder for use in operations. It defaults to the OS `%TEMP%` folder. Useful if you want to use a ramdrive. Make sure it can hold up to 1.2GB of data.
+- **Max Threads** ⇒ set with `-th` followed by a number `1-8`  
+  :warning: *(Advanced Feature)*, Sets the maximum number of concurrent processes for encoding tracks. **Defaults to 2**. Don't set this bigger than the number of logical cores you have.
 
 
-## :cd: Converting to .cue/encoded audio
+## :information_source: Note on Converting to .cue/encoded audio
 
-You can **convert** a `.cue/.bin` CD, into another `.cue/.bin` combo with **encoded audio tracks called from the cue file**. This is really useful if you want to play a CD in an emulator that supports loading `.cue` files with encoded audio tracks (*e.g. mednafen supports libvorbis and FLAC audio*)
+You can **convert** a `.cue/.bin` CD, into another `.cue/.bin` combo with **encoded audio tracks**. This is really useful if you want to play a CD in an emulator that supports loading `.cue` files in this format (*e.g. mednafen supports libvorbis and FLAC audio*)
 
 Just use the option `-enc` with the **crush** or **restore** action. *(For when using it with the restore action, the audio tracks will not be re-encoded, they will just be left as they were when originally encoded.)*
 
@@ -161,28 +147,26 @@ See [`CHANGELOG.MD`](CHANGELOG.md)
 
 ## :clipboard: Q&A
 
-**Q** : Why?\
-**A** : I wanted to save space on my hard drive and I think it's a decent way to store CD images, better than just compressing with 7zip or Rar. Also It was a good programming practice.
+**Q** : Why?  
+ **A** : I wanted to save space on my hard drive and I think  it's a decent way to store CD images, better than just compressing with  7zip or Rar. Also It was a good programming practice.
 
-**Q** : Does it support games from SegaCD, Jaguar, 3DO, X, Y?\
-**A** : Theoretically it should support all valid **.cue/.bin** files, try it out.
+**Q** : Does it support games from SegaCD, Jaguar, 3DO, X, Y?  
+ **A** : Theoretically it should support all valid **.cue/.bin** files, try it out.
 
-**Q** : I am worried about the audio quality.\
-**A** : The OGG Vorbis/Opus codec is decent and it can produce very good results even at 96kbps. **However** if you don't want any compressed audio you can select the **FLAC** encoder, which is lossless.
+**Q** : I am worried about the audio quality.  
+ **A** : Vorbis and Opus can produce very good results even at 96kbps. If you just want to keep the games for personal use it is fine. **However** if you don't want any compressed audio you can select the **FLAC** or **TAK** codecs, which are lossless.
 
-**Q**: Is storing the entire CD with FLAC really lossless? I am worried about byte integrity.\
-**A**: YES, to the last byte. The filesize and checksums of the restored tracks are the same as the original ones. (data&audio). You can check for yourself by calculating the checksums of restored files vs original source. 
+**Q**: Is storing the entire CD with FLAC/TAK really lossless? I am worried about byte integrity.  
+ **A**: YES, to the last byte. The filesize and checksums of  the restored tracks are the same as the original ones.  (data&audio).
 
 
 ## :stars: dotNET Version
 
-Checkout the  [dotNet version](https://github.com/johndimi/cdcrush.net), it's simpler to use, but it doesn't support batch operations. *Windows Only*
+Checkout the  [dotNet version](https://github.com/johndimi/cdcrush.net), it offers a GUI, so it simpler to use, but it doesn't support batch operations. *Windows Only*
 
-## :triangular_flag_on_post: About
+## :triangular_flag_on_post: Finally
 
-Feel free to provide feedback and contact me on social media and email. Donations are always welcome! :smile:
-
-[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.me/johndimi)
-
-Thanks for checking this out,\
+Feel free to provide feedback for this project   
+donations are always welcome! [https://www.paypal.me/johndimi](https://www.paypal.me/johndimi)  
+Thanks for checking this out,  
 John.

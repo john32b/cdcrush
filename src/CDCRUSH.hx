@@ -13,21 +13,17 @@
  * ---------------------------------------------- */
 
 package;
+import app.FFmpeg;
 import cd.CDInfos;
-import djNode.task.CJob;
-import djNode.task.CJob.CJobStatus;
 import djNode.tools.FileTool;
 import djNode.tools.HTool;
 import djNode.tools.LOG;
-import djNode.tools.MathTool;
 import djNode.tools.StrTool;
 import js.Error;
 import js.Node;
 import js.node.Fs;
 import js.node.Os;
 import js.node.Path;
-
-
 
 
 class CDCRUSH
@@ -40,7 +36,7 @@ class CDCRUSH
 	public static inline var AUTHORNAME = "John Dimi";
 	public static inline var PROGRAM_NAME = "cdcrush";
 	public static inline var PROGRAM_VERSION = "1.5";
-	public static inline var PROGRAM_SHORT_DESC = "Highy compress cd-image games";
+	public static inline var PROGRAM_SHORT_DESC = "Highly compress cd-image games";
 	public static inline var LINK_DONATE = "https://www.paypal.me/johndimi";
 	public static inline var LINK_SOURCE = "https://github.com/johndimi/cdcrush";
 	public static inline var CDCRUSH_SETTINGS = "crushdata.json";
@@ -90,23 +86,17 @@ class CDCRUSH
 		LOG.log('== ' + PROGRAM_SHORT_DESC);
 		#if EXTRA_TESTS
 		LOG.log('== DEFINED : EXTRA_TESTS');
+		LOG.log('== > Test Suite accessible.');
 		LOG.log('== > Will do extra checksum checks on all operations.');
 		#end
 		LOG.log('== ------------------------------------------------- \n');
 		
-		#if debug
-			// When running from `source/bin/`
-			TOOLS_PATH = "../tools/";		
-			FFMPEG_PATH = "";
-		#else  
-			// NPM BUILD :
-			// Same folder as the main .js script :
-			TOOLS_PATH = FileTool.appFileToFullPath("");
-			FFMPEG_PATH = "";		
-		#end
+		// Works for NPM and DEBUG builds
+		TOOLS_PATH = Path.join( Path.dirname(Node.process.argv[1]), "../tools/");
+		FFMPEG_PATH = "";
 		
 		#if STANDALONE
-			// Everying is included in 
+			// Everying is included in there
 			TOOLS_PATH = "tools/";
 			FFMPEG_PATH = "tools/";
 		#end
@@ -114,6 +104,11 @@ class CDCRUSH
 		CDInfos.LOG = (l)->LOG.log(l);
 		
 		setTempFolder(tempFolder);
+		
+		var f = new FFmpeg(FFMPEG_PATH);
+		if (!f.exists()) {
+			throw "Could not find ffmpeg.exe. Make sure it is set on system/user path";
+		}
 	}//---------------------------------------------------;
 	
 	// --

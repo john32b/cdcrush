@@ -3,6 +3,16 @@
 CDCRUSH.nodejs CHANGELOG:
 =========================
 
+## V 1.5 (May 2019)
+- Added support for TAK audio encoder
+- Added support for 7zip (included), you can now create/restore `.7z` and `.zip` cdcrush archives
+- UI update
+- Input Parameters naming changed
+- Changed Audio Encoding parameters, now there are three predefined quality string for each encoder (low, medium, high)
+- Fully compatible with the v1.5 dot NET version of cdcrush
+- New:`-nfo` parameter, produces an operation information file
+
+
 ## V 1.4 (April 2018)
 
 - Compatible with the [**.net** version](https://github.com/johndimi/cdcrush.net) of cdcrush

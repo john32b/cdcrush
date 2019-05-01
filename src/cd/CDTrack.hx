@@ -25,6 +25,7 @@ class CDTrack
 	var pregap:CueTime;					// There can only be ONE pregap per Track. (00:00:00)
 	var md5:String;						// The MD5 of the source Binary	
 	var storedFileName:String;			// Keep the crushed track filename. (e.g. `Track02.ogg`)
+										// Only useful when storing cd info to json
 
 	// JSON_IGNORE vars:
 	

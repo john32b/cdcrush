@@ -1,0 +1,46 @@
+{
+  "name": "cdcrush",
+  "description": "Highly compress cd-image games.",
+  "license": "MIT",
+  "keywords": [
+    "cd",
+    "compress",
+    "cd image",
+    "emulation",
+    "cue",
+    "convert",
+    "lossless",
+	"storage"
+  ],
+  "homepage": "https://github.com/johndimi/cdcrush",
+  "version": "1.5.0",
+  "author": {
+    "name": "John Dimi",
+    "email": "johndimi@outlook.com"
+  },
+  "engines": {
+    "node": ">= 10.15.3"
+  },
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "ia32",
+    "x64"
+  ],
+  "preferGlobal": true,
+  "bin": "bin/cdcrush.js",
+  "files": [
+    "bin/cdcrush.js",
+	"tools/*",
+    "docs/*"
+  ],
+  "scripts": {
+    "build": "haxe build.hxml && echo #! /usr/bin/env node > bin/temp.js && type bin\\npmbuild.js >> bin/temp.js && uglifyjs bin\\temp.js --compress --mangle -o bin\\cdcrush.js && del bin\\temp.js"
+  },  
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/johndimi/cdcrush"
+  },
+  "dependencies": {}
+}

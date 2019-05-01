@@ -7,11 +7,14 @@ import app.SevenZip;
 import app.Tak;
 import cd.CDInfos;
 import djNode.BaseApp;
+import djNode.Terminal;
 import djNode.task.CJob;
 import djNode.task.CTask;
+import djNode.task.CTestTask;
 import djNode.tools.FileTool;
 import djNode.tools.HTool;
 import djNode.tools.LOG;
+import djNode.utils.CJobReport;
 import djNode.utils.CLIApp;
 import haxe.macro.Expr;
 import js.node.Crypto;
@@ -20,23 +23,18 @@ import js.node.Path;
 
 /**
  * Tests for CDCRUSH Engine & Components
- * 
- * HOW TO RUN
  * ----------
- *  - set `PATH_TESTS` to a writable folder
+ * - Call init() first
+ * - TEST_Gui();
+ * - TEST_Components();
  */
-class TestMain extends BaseApp 
+class Tests
 {
-	// -
-	static function main() new test.TestMain();
-	
-	// You can check this file for more info on the tests
-	var LOG_FILE 	= "a:\\cdcrush_dev_log.txt";
-	var PATH_TESTS 	= "a:\\cdcrush_tests"; 		// (folder will be created)
+	var PATH_TESTS 	= "a:\\cdcrush_test_component"; 	// (folder will be created)
 	// --
 	// Leave these alone:
 	var SOUND_WAV 	= "..\\tests\\sound.wav";	// Master sound to test codecs with
-	var PATH_CUE	= "..\\tests\\cd_test.cue";
+	var PATH_CUE	= "..\\tests\\Sample - Multitrack.cue";
 	var PATH_TOOLS 	= "..\\tools";
 	
 	// Some generated files that I need to keep track of
@@ -57,16 +55,50 @@ class TestMain extends BaseApp
 	// Since no operations are going to run simultaneously. I can reuse these objects
 	var Ff:FFmpeg;
 	var Tk:Tak;
+	var T:Terminal;
 	//---------------------------------------------------;
 	
-	override function init() 
+	public function new()
 	{
-		LOG.setLogFile(LOG_FILE);
-		super.init();
+		T = BaseApp.TERMINAL;
+	}//---------------------------------------------------;	
+		
+	public function TEST_Gui()
+	{
+		T.H2("CDCRUSH GUI Test :");
+
+		var j = new CJob("crush");
+			j.info = "Crushing [`c:\\games\\game.cue`]";
+			j.add(new CTestTask(300, "Cutting BIN into Track Files"));
+			j.add(new CTestTask(300, "Encoding Track 1"));
+			j.add(new CTestTask(300, "Encoding Track 2"));
+			j.add(new CTestTask(300, "Creating Archive"));
+			
+		var j2 = new CJob("restore");
+			j2.info = "Restoring [`c:\\games\\game.cue`]";
+			j2.add(new CTestTask(300, "Extracting"));
+			j2.add(new CTestTask(300, "Restoring Track 1"));
+			j2.add(new CTestTask(300, "Restoring Track 2"));
+			j2.add(new CTestTask(300, "Merging files"));	
+			j2.addQ((t)->{
+				throw "Task Fail";
+			});
+			
+		var rep = new CJobReport(j);
+		
+		j.onComplete = ()->
+		{
+			rep = new CJobReport(j2);
+			j2.start();
+		}
+		
+		j.start();
+		
 	}//---------------------------------------------------;
 	
-	override function onStart() 
-	{
+	
+	public function TEST_Components()
+	{	
 		T.H2("CDCRUSH Component Tests :");
 		
 		Ff = new FFmpeg(); //<- You need ffmpeg on path
@@ -77,7 +109,7 @@ class TestMain extends BaseApp
 			FileTool.deleteRecursiveDir(PATH_TESTS);
 			FileTool.createRecursiveDir(PATH_TESTS);
 		}catch (e:Dynamic) {
-			exitError('Can`t create or access $PATH_TESTS');
+			throw('Can`t create or access $PATH_TESTS');
 		}
 		
 		
@@ -85,7 +117,7 @@ class TestMain extends BaseApp
 		// TODO: Better reports
 		CJob.global_job_status = (s, j)->{
 			if (s == CJobStatus.start) {
-				T.printf('--> STARTING TESTS : ~yellow~${j.name}~!~\n');
+				T.printf('--> STARTING TESTS : ~yellow~${j.sid}~!~\n');
 			}else
 			if (s == CJobStatus.allcomplete) {
 				T.printf('--> All tests completed successfully ~green~[OK]~!~\n');
@@ -131,9 +163,10 @@ class TestMain extends BaseApp
 		return new CJob("Codec Master.").addQ((t)->{
 			trace("Archivers" 	, CodecMaster.getAvailableArchivers());
 			trace("Audio Codecs" , CodecMaster.getAvailableAudioCodecs());
-			trace("Normalized Codec Strings");
+			trace("Normalized Codec Strings -- CHECK MANUALLY FOR NOW --");
 			// Test User Params
-			var cc = ['OPUS:1', 'OPUS', 'MP3::', 'MP3:4', 'tak', 'tak:f', 'null:null', 'ne:2:three', 'VORBIS:4'];
+			var cc = [	'OPUS:1', 'OPUS', 'MP3::', 'MP3:4', 'tak', 'tak:f', 'null:null', 'ne:2:three', 'VORBIS:4', 
+						'VORBIS:-1', 'mP3:::100', 'TAK:4','FLAC:-2', 'OPUS2', 'OPUS:MP3:4'];
 			for (c in cc){
 				var nfo = "";
 				var res = CodecMaster.normalizeAudioSettings(c);
@@ -169,7 +202,6 @@ class TestMain extends BaseApp
 			trace("Saving JSON CD Info file");
 			cd.tracks[0].storedFileName = "track01.bin";
 			cd.tracks[1].storedFileName = "track02.bin";
-			cd.tracks[2].storedFileName = "track03.bin";
 			cd.jsonSave(Path.join(PATH_TESTS, "cdsave.json"));
 			t.complete();
 		});
