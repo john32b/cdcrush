@@ -51,7 +51,8 @@ class EcmTools implements ISendingProgress
 	
 	var app:CLIApp;
 	
-	public var onComplete:Bool->Void;
+  	public var onComplete:Void->Void;
+	public var onFail:String->Void;
 	public var onProgress:Int->Void;
 	public var ERROR(default, null):String;
 
@@ -90,8 +91,12 @@ class EcmTools implements ISendingProgress
 	private function setup(oper:String):Void
 	{
 		app.onClose = (s)->{
-			ERROR = app.ERROR;
-			HTool.sCall(onComplete, s);
+			if (s){
+				HTool.sCall(onComplete);
+			}else{
+				ERROR = app.ERROR;
+				HTool.sCall(onFail,ERROR);
+			}
 		};
 		var expr_per:EReg;
 		if (oper == "encode") expr_per = expr_enc; else expr_per = expr_dec;

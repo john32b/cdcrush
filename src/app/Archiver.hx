@@ -30,10 +30,11 @@ class Archiver implements ISendingProgress
 		onProgress(val);
 		return val;
 	}
-	
+		
+ 	public var onComplete:Void->Void;
+	public var onFail:String->Void;
+	public var onProgress:Int->Void = (p)->{};
 	public var ERROR(default, null):String;
-	public var onProgress:Int->Void = (a)->{};
-	public var onComplete:Bool->Void = (a)->{}; // OnComplete(Success), read ERROR for errors
 	
 	public function new(exePath:String)
 	{

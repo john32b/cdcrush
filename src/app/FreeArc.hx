@@ -45,10 +45,10 @@ class FreeArc extends Archiver
 		
 		app.onClose = (s) -> {
 			
-			if (!s) // ERROR
-			{
-				ERROR = app.ERROR;
-				return onComplete(false);
+			if(!s){
+				ERROR = app.ERROR;	
+				HTool.sCall(onFail, ERROR);
+				return;
 			}
 			
 			if (operation == "compress")
@@ -65,7 +65,7 @@ class FreeArc extends Archiver
 					LOG.log('$ARCHIVE_PATH Compressed size = $COMPRESSED_SIZE');
 				}
 			}
-			onComplete(true);
+			HTool.sCall(onComplete);
 		};
 		
 		// - Progress capture is the same on all operations ::

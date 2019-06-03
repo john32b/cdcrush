@@ -65,7 +65,8 @@ class FFmpeg implements ISendingProgress
 	var progress:Int;
 	
 	// --
-	public var onComplete:Bool->Void;
+  	public var onComplete:Void->Void;
+	public var onFail:String->Void;
 	public var onProgress:Int->Void;
 	public var ERROR(default, null):String;
 	
@@ -89,8 +90,12 @@ class FFmpeg implements ISendingProgress
 		
 		// Regardless of success, copy over the error (if any) and pass over success from the app
 		app.onClose = (s)->{
-			ERROR = app.ERROR;
-			HTool.sCall(onComplete, s);
+			if(s){
+				HTool.sCall(onComplete);
+			}else{
+				ERROR = app.ERROR;	
+				HTool.sCall(onFail, ERROR);
+			}
 		};
 	}//---------------------------------------------------;
 	
@@ -182,7 +187,7 @@ class FFmpeg implements ISendingProgress
 		getSecondsFromFile(input, (s)->{
 			if (s < 0) {
 				ERROR = 'Could not read "$input"';
-				HTool.sCall(onComplete, false);
+				HTool.sCall(onFail, ERROR);
 				return;		
 			}
 			targetSeconds = s;

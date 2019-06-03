@@ -62,7 +62,7 @@ class Main extends BaseApp
 		];
 		
 		#if debug
-			LOG.setLogFile("a:\\CDCRUSH_LOG.txt", true);
+			LOG.setLogFile("a:\\CDCRUSH_LOG.txt");
 		#end
 		
 		P2 = new Print2(T);
@@ -135,28 +135,28 @@ class Main extends BaseApp
 		// -- Print the running arguments
 		// --
 		if (argsAction == "r") {
-			P2.prints('Action : {0}\n', ['Restore']);
+			P2.print1('Action : {0}', ['Restore']);
 			var flags:String = 	((argsOptions.merge)?"(Merge) ":"") +
 								((argsOptions.nosub)?"(No Subfolder) ":"") +
 								((argsOptions.enc)?"(Encoded Audio) ":"");
 			if (flags.length > 0)
-				P2.prints('Flags  : {0}\n', [flags]);
+				P2.print1('Flags  : {0}', [flags]);
 		}else
 		if (argsAction == "c")
 		{
 			if (argsOptions.enc){
-				P2.prints('Action  : {0}\n', ['Convert']);
+				P2.print1('Action  : {0}', ['Convert']);
 			}
 			else{
-				P2.prints('Action  : {0}\n', ['Crush']);
-				P2.prints('Archive : {0}\n', [CodecMaster.getArchiverInfo(CodecMaster.getSettingsTuple(DC))]);
+				P2.print1('Action  : {0}', ['Crush']);
+				P2.print1('Archive : {0}', [CodecMaster.getArchiverInfo(CodecMaster.getSettingsTuple(DC))]);
 			}
 			
-			P2.prints('Audio   : {0}\n', [CodecMaster.getAudioQualityInfo(CodecMaster.getSettingsTuple(AC))]);
+			P2.print1('Audio   : {0}', [CodecMaster.getAudioQualityInfo(CodecMaster.getSettingsTuple(AC))]);
 		}
 		
 		if(argsOptions.nfo){
-			P2.prints('Output  : {0}\n', [((argsOutput == null)?'.(same as source)':argsOutput)]);
+			P2.print1('Output  : {0}', [((argsOutput == null)?'.(same as source)':argsOutput)]);
 		}
 		
 		T.drawLine();
@@ -193,8 +193,8 @@ class Main extends BaseApp
 			});
 			postInfos = (_)->{
 				var j:JobRestore = cast job;
-				P2.prints('  Created : {0}\n', [j.createdCueFile + ' + bins']);
-				P2.prints('  Size : {1} -> {0}\n', [StrTool.bytesToMBStr(j.original_size)+'MB', StrTool.bytesToMBStr(j.final_size)+'MB']);
+				P2.print1('  Created : {0}', [j.createdCueFile + ' + bins']);
+				P2.print1('  Size : {1} -> {0}', [StrTool.bytesToMBStr(j.original_size)+'MB', StrTool.bytesToMBStr(j.final_size)+'MB']);
 			};
 			
 		}else if (argsAction == "c") {
@@ -208,14 +208,14 @@ class Main extends BaseApp
 			if(argsOptions.enc)
 				postInfos = (_)->{ // CONVERT
 					var j:JobCrush = cast job;
-					P2.prints('  Created : {0}\n', [j.convertedCuePath + ' + bins']);
-					P2.prints('  Size : {1} -> {0}\n', [StrTool.bytesToMBStr(j.original_size)+'MB', StrTool.bytesToMBStr(j.final_size)+'MB']);
+					P2.print1('  Created : {0}', [j.convertedCuePath + ' + bins']);
+					P2.print1('  Size : {1} -> {0}', [StrTool.bytesToMBStr(j.original_size)+'MB', StrTool.bytesToMBStr(j.final_size)+'MB']);
 				};
 			else
 				postInfos = (_)->{ // CRUSH
 					var j:JobCrush = cast job;
-					P2.prints('  Created : {0}\n', [j.final_arc]);
-					P2.prints('  Size : {1} -> {0}\n', [StrTool.bytesToMBStr(j.original_size)+'MB', StrTool.bytesToMBStr(j.final_size)+'MB']);					
+					P2.print1('  Created : {0}', [j.final_arc]);
+					P2.print1('  Size : {1} -> {0}', [StrTool.bytesToMBStr(j.original_size)+'MB', StrTool.bytesToMBStr(j.final_size)+'MB']);					
 				};
 		}
 		// This will autoprint JOB progress

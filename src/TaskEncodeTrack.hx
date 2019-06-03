@@ -58,15 +58,16 @@ class TaskEncodeTrack extends CTask
 	
 	override public function syncWith(p:ISendingProgress) 
 	{
-		p.onProgress = (p)-> PROGRESS = p;
-		p.onComplete = (s)-> {
+		p.onComplete = ()->{
 			p.onComplete = null; // Safekeep
 			if (!CDCRUSH.FLAG_KEEP_TEMP && j.flag_tracksOnTempFolder) {
 				// Delete Old File
 				Fs.unlinkSync(sourceTrackFile);
 			}
-			if (s) complete(); else fail(p.ERROR);
-		}
+			complete();
+		};
+		p.onFail = (f)->fail(f, null);
+		p.onProgress = (p)-> PROGRESS = p;
 	}//---------------------------------------------------;
 	
 	// --

@@ -28,7 +28,8 @@ class Tak implements ISendingProgress
 	// The CLI object
 	var app:CLIApp;
 	// --
-	public var onComplete:Bool->Void;
+  	public var onComplete:Void->Void;
+	public var onFail:String->Void;
 	public var onProgress:Int->Void;
 	public var ERROR(default, null):String;
 	
@@ -38,8 +39,12 @@ class Tak implements ISendingProgress
 		app.LOG_STDOUT = false;
 		
 		app.onClose = (s)->{
-			ERROR = app.ERROR;
-			HTool.sCall(onComplete, s);
+			if (s){
+				HTool.sCall(onComplete);
+			}else{
+				ERROR = app.ERROR;
+				HTool.sCall(onFail, ERROR);
+			}
 		};
 	}//---------------------------------------------------;
 	

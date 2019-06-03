@@ -181,7 +181,7 @@ class JobCrush extends CJob
 				if (tr.isData && !flag_tracksOnTempFolder)
 				{
 					// Copy only data tracks that are still on <input>
-					FileTool.copyFile(tr.workingFile, Path.join(p.outputDir, tr.trackFile));
+					FileTool.copyFileSync(tr.workingFile, Path.join(p.outputDir, tr.trackFile));
 				}
 				else
 				{
