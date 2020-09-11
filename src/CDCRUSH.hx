@@ -19,7 +19,7 @@ import djNode.tools.FileTool;
 import djNode.tools.HTool;
 import djNode.tools.LOG;
 import djNode.tools.StrTool;
-import js.Error;
+import js.lib.Error;
 import js.Node;
 import js.node.Fs;
 import js.node.Os;

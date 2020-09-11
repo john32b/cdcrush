@@ -2,7 +2,7 @@
 # CDCRUSH (node.js)
 
 **Name**: CDCRUSH, *Highly compress cd-image games*  
-**Author:** John Dimi :computer:, <johndimi@outlook (.) com> *twitter*: [@jondmt](https://twitter.com/jondmt)  
+**Author:** John Dimi :computer:, <johndimi (at) outlook (dot) com>  
 **Project Page and Sources:** [https://github.com/johndimi/cdcrush](https://github.com/johndimi/cdcrush)  
 **Language:** HAXE compiled to Node.js, **License**: MIT  
 **Version:** 1.5 **Platform:** Windows  
@@ -12,7 +12,7 @@
 
 ![CDCRUSH LOGO](images/logo.png)  
 
-**Cdcrush** is a tool that can highly compress **CD based games**, *(PS1, PC-Engine, PC, etc.)*. Reduces size of data and audio tracks. Ideal for **storage/sharing**.  
+**CDCrush** is a tool that can highly compress **CD based games**, *(PS1, PC-Engine, PC, etc.)*. Reduces size of data and audio tracks. Ideal for **storage/sharing**.  
 Then it can **restore** a compressed archive back to a CD Image `.cue/.bin`. Also you can use a **lossless audio codec** to store/restore a `1:1` ,byte to byte, copy of a CD Image.
 
 :hammer_and_wrench: **In Detail**:  
@@ -57,7 +57,7 @@ Then it can **restore** a compressed archive back to a CD Image `.cue/.bin`. Als
 1. Get [nodeJS](https://nodejs.org/en/) *(version 10+)* and make sure **npm** is also installed *(NodeJs installer should install npm)*
 2. On a terminal type : `npm install -g cdcrush`  
 *This will install cdcrush globally and you can use it from anywhere.*
-3. Cdcrush needs [ffmpeg](http://ffmpeg.org/) to be set on the user/system path. It is a free and open source program required to encode audio tracks.  
+3. cdcrush needs [ffmpeg](http://ffmpeg.org/) to be set on the user/system path. It is a free and open source program required to encode audio tracks.  
 :warning: **FFmpeg NEEDS to be set on PATH** . The easiest way to do this is to copy `ffmpeg.exe` into your `c:\windows` folder. 
 4. That's it. **cdcrush** is ready to go.
 
@@ -164,9 +164,10 @@ See [`CHANGELOG.MD`](CHANGELOG.md)
 
 Checkout the  [dotNet version](https://github.com/johndimi/cdcrush.net), it offers a GUI, so it simpler to use, but it doesn't support batch operations. *Windows Only*
 
-## :triangular_flag_on_post: Finally
 
-Feel free to provide feedback for this project   
-donations are always welcome! [https://www.paypal.me/johndimi](https://www.paypal.me/johndimi)  
-Thanks for checking this out,  
-John.
+
+## :triangular_flag_on_post: Issues and Notes
+
+- This is an old project, and I am not going to be working on it anymore.
+
+- There is a **known visual bug** , when you are operating on a filename with the characters`[]` included. The printing of the title might get jumbled up. 

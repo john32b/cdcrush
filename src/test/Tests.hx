@@ -81,7 +81,7 @@ class Tests
 			j2.add(new CTestTask(300, "Restoring Track 2"));
 			j2.add(new CTestTask(300, "Merging files"));	
 			j2.addQ((t)->{
-				throw "Task Fail";
+				throw "Task Fail - This is part of the test - ";
 			});
 			
 		var rep = new CJobReport(j);
@@ -131,7 +131,6 @@ class Tests
 			if (s == CJobStatus.taskStart) {
 				if (j.TASK_LAST.info != null) T.printf(' >> ${j.TASK_LAST.info}\n');
 			}
-			return null;
 		};
 
 		// Run Tests:

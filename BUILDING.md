@@ -4,21 +4,30 @@
 
 ### Requirements
 
-- HAXE 4  
+- HAXE 4.1.3
 https://haxe.org/download/
 
-- hxnodejs 6.9.1 (*library*)  
+- hxnodejs 12.1.0 (*library*)  
 https://github.com/HaxeFoundation/hxnodejs
-`haxelib install hxnodejs`
+`haxelib install hxnodejs 12.1.0`
 
-- djNode 0.4.0 (*library*)  
-https://github.com/johndimi/djNode/releases/tag/v0.4  
+- djNode 0.5.0 (*library*)  
+https://github.com/johndimi/djNode/releases/tag/v0.5  
 Download the source zip and then
 `haxelib install djNode-0.4.zip`
 
-
-- HaxeDevelop  *(optional)*
+- HaxeDevelop *(optional)*
 https://haxedevelop.org/
+
+	
+### Build
+
+	- Execute  `npm run build`  to build the `.js` file in the bin folder
+
+> **! NOTE !**
+> The build might produce some warnings about some things being deprecated, this is ok.
+
+
 
 ### Running 
 
