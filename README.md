@@ -2,11 +2,11 @@
 # CDCRUSH (node.js)
 
 **Name**: CDCRUSH, *Highly compress cd-image games*  
-**Author:** John Dimi :computer:, <johndimi (at) outlook (dot) com>  
-**Project Page and Sources:** [https://github.com/johndimi/cdcrush](https://github.com/johndimi/cdcrush)  
+**Version:** 1.5.1 **Platform:** Windows  
 **Language:** HAXE compiled to Node.js, **License**: MIT  
-**Version:** 1.5 **Platform:** Windows  
+**Project Page and Sources:** [https://github.com/johndimi/cdcrush](https://github.com/johndimi/cdcrush)   
 **Sister Project**: [cdcrush.net](https://github.com/johndimi/cdcrush.net)
+**Author:** John Dimi :computer:  
 
 ## :mega: What is it
 
@@ -170,4 +170,5 @@ Checkout the  [dotNet version](https://github.com/johndimi/cdcrush.net), it offe
 
 - This is an old project, and I am not going to be working on it anymore.
 
-- There is a **known visual bug** , when you are operating on a filename with the characters`[]` included. The printing of the title might get jumbled up. 
+- ~~There is a **known visual bug** , when you are operating on a filename with the characters`[]` included. The printing of the title might get jumbled up.~~ (fixed in 1.5.1)
+

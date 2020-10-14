@@ -4,7 +4,7 @@ import djNode.BaseApp;
 import djNode.task.CJob;
 import djNode.tools.LOG;
 import djNode.tools.StrTool;
-import djNode.utils.CJobReport;
+import CJobReport;
 import djNode.utils.Print2;
 
 /**
@@ -50,8 +50,8 @@ class Main extends BaseApp
 			['merge', 'Force Single Bin', '<Restore> tracks into a single .bin/.cue '],
 			['ac', 'CODEC:QUALITY , Audio compression for audio tracks', 
 					"Codecs : flac , opus , vorbis , mp3 , tak : (Defaults to flac)\n" +
-					"Quality : 0 low, 1 normal, 2 high : (Defaults to 1)\n" +
-					"e.g. -ac flac , -ac opus:0, -ac mp3:2", 'yes'],
+					"Quality : 0 lowest, 1 low, 2 normal, 3 high : (Defaults to 2)\n" +
+					"e.g. -ac flac , -ac opus:0, -ac mp3:3", 'yes'],
 			['dc', 'ARCHIVER:Compression , Data compression for final archive',
 					"Archivers : 7z , zip , arc : (Defaults to arc)\n" +
 					"Compression : 0 low, 1 normal, 2 high : (Defaults to 1)\n" +

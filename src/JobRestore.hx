@@ -34,7 +34,7 @@ class JobRestore extends CJob
 	public function new(P:RestoreParams)
 	{
 		super("restore");
-		info = 'Restoring : [' + Path.basename(P.inputFile) + ']';
+		info = 'Restoring : [' + Path.basename(P.inputFile) + ']';	// [ ] will be replaced with color codes on the terminal
 		p = P;
 	}//---------------------------------------------------;
 	

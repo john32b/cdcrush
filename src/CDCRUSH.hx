@@ -35,7 +35,7 @@ class CDCRUSH
 	// -- Program Infos
 	public static inline var AUTHORNAME = "John Dimi";
 	public static inline var PROGRAM_NAME = "cdcrush";
-	public static inline var PROGRAM_VERSION = "1.5";
+	public static inline var PROGRAM_VERSION = "1.5.1";
 	public static inline var PROGRAM_SHORT_DESC = "Highly compress cd-image games";
 	public static inline var LINK_DONATE = "https://www.paypal.me/johndimi";
 	public static inline var LINK_SOURCE = "https://github.com/johndimi/cdcrush";

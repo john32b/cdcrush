@@ -77,22 +77,22 @@ class CodecMaster
 	
 		"MP3" => {
 				name:"MP3", ext:".mp3",
-				qReal:['9', '6', '1'],
-				qName:['65' , '115', '225'], p:'k Vbr',
+				qReal:['9', '7', '5', '1'],
+				qName:['65', '100', '130', '225'], p:'k Vbr',
 				encstr:'-c:a libmp3lame -q:a '
 				},
 				
 		"VORBIS" => {
 				name:"Vorbis", ext:".ogg",
-				qReal:['0', '3', '9'],
-				qName:['64', '112', '320'], p:'k Vbr',
+				qReal:['0', '1.5', '3', '9'],
+				qName:['64', '88', '112', '320'], p:'k Vbr',
 				encstr:'-c:a libvorbis -q '
 				},
 		
 		"OPUS" => {
 				name:"Opus", ext:".ogg",
-				qReal:['48k', '96k', '320k'],
-				qName:['48', '96', '320'], p:'k Vbr',
+				qReal:['48k', '64k', '96k', '320k'],
+				qName:['48', '64', '96', '320'], p:'k Vbr',
 				encstr:'-c:a libopus -vbr on -compression_level 10 -b:a '
 			},
 			
@@ -192,12 +192,12 @@ class CodecMaster
 	// Checks and Normalizes
 	public static function normalizeAudioSettings(s:String):String
 	{
-		return parseCodecTuple(s, getAvailableAudioCodecs());
+		return parseCodecTuple(s, getAvailableAudioCodecs(), 3, 2);
 	}//---------------------------------------------------;
 	// Checks and Normalizes
 	public static function normalizeArchiverSettings(s:String):String
 	{
-		return parseCodecTuple(s, getAvailableArchivers());
+		return parseCodecTuple(s, getAvailableArchivers(), 2, 1);
 	}//---------------------------------------------------;
 	
 	// PRE: Settings are VALID
@@ -210,10 +210,9 @@ class CodecMaster
 	/**
 	   Parses from ID:QUALITY to proper string
 	   - Capitalize ID
-	   - Range Quality (0-2)
 	   - Null if any Errors
 	**/
-	static function parseCodecTuple(S:String, M:Array<String>):String
+	static function parseCodecTuple(S:String, M:Array<String>, MAX:Int, DEF:Int):String
 	{
 		var a = S.split(':');
 		if (a.length > 0){
@@ -224,11 +223,11 @@ class CodecMaster
 				if (a[1] != null) {
 					var t = Std.parseInt(a[1]);
 					if (t != null){
-						if (t < 0) t = 0; else if (t>2) t=2;
+						if (t < 0) t = 0; else if (t>MAX) t=MAX;
 						return ret + t;
 					}
 				}
-				return ret + '1';
+				return ret + '$DEF';
 			}
 		}
 		return null;

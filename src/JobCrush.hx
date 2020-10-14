@@ -51,10 +51,10 @@ class JobCrush extends CJob
 		}
 		if (p.flag_convert_only) {
 			sid = "convert";
-			info = 'Converting : [${_f}]';
+			info = 'Converting : [${_f}]';	// [ ] will be replaced with color codes in cJobReport
 		}else{
 			sid = "crush";
-			info = 'Crushing : [${_f}]';
+			info = 'Crushing : [${_f}]';	// ^ same
 		}
 	}//---------------------------------------------------;
 	

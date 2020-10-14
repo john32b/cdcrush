@@ -3,6 +3,10 @@
 CDCRUSH.nodejs CHANGELOG:
 =========================
 
+## V 1.5.1 (2020-10)
+- More audio encoding options. Now it has 4 options `lowest,low,medium,high`
+- Fixed bug where filenames having`[ ]` characters in their name would not get colored correctly in the terminal (visual bug)
+
 ## V 1.5 (May 2019)
 - Added support for TAK audio encoder
 - Added support for 7zip (included), you can now create/restore `.7z` and `.zip` cdcrush archives
