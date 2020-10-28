@@ -19,6 +19,7 @@ class Main extends BaseApp
 	var DC:String;
 	// Advanced Prints
 	var P2:Print2;
+	var SILENT:Bool = false;
 	// --
 	override function init() 
 	{		
@@ -56,9 +57,10 @@ class Main extends BaseApp
 					"Archivers : 7z , zip , arc : (Defaults to arc)\n" +
 					"Compression : 0 low, 1 normal, 2 high : (Defaults to 1)\n" +
 					"e.g. -dc zip , -dc arc:2", 'yes'],
-			['th',   'Threads', 'Number of maximum threads allowed for operations (1-8) (Default = ${CDCRUSH.MAX_TASKS})', 'yes'],
+			['th',  'Threads', 'Number of maximum threads allowed for operations (1-8) (Default = ${CDCRUSH.MAX_TASKS})', 'yes'],
 			['tmp', 'Temp Folder', 'Set a custom temp folder for operations', 'yes'],
-			['nfo', 'Save Info', 'Produce an info .txt file next to the produced files\ncontaining general infos, like track MD5 and sizes']
+			['nfo', 'Save Info', 'Produce an info .txt file next to the produced files\ncontaining general infos, like track MD5 and sizes'],
+			['fork','-Fork','Called as a fork from another nodejs script']
 		];
 		
 		#if debug
@@ -84,7 +86,9 @@ class Main extends BaseApp
 	override function onStart() 
 	{
 		printBanner();
-	
+		
+		SILENT = argsOptions.fork;
+		
 		#if debug
 			T.printf("~red~ - DEBUG BUILD - ~!~\n");
 			// CDCRUSH.FLAG_KEEP_TEMP = true;
@@ -132,8 +136,14 @@ class Main extends BaseApp
 		}
 		
 		
+		if (SILENT) 
+		{
+			do_nextFile(); 
+			return;
+		}
+		
 		// -- Print the running arguments
-		// --
+		
 		if (argsAction == "r") {
 			P2.print1('Action : {0}', ['Restore']);
 			var flags:String = 	((argsOptions.merge)?"(Merge) ":"") +
@@ -173,9 +183,9 @@ class Main extends BaseApp
 	**/
 	function do_nextFile()
 	{
-		var f = argsInput.shift();
+		var FILE = argsInput.shift();
 		
-		if (f == null) {
+		if (FILE == null) {
 			LOG.log("[END] - All input files processed");
 			Sys.exit(0);
 		}
@@ -185,7 +195,7 @@ class Main extends BaseApp
 		
 		if (argsAction == "r") {
 			job = new JobRestore({
-				inputFile:f,
+				inputFile:FILE,
 				outputDir:argsOutput,
 				flag_forceSingle:argsOptions.merge,
 				flag_nosub:argsOptions.nosub,
@@ -199,7 +209,7 @@ class Main extends BaseApp
 			
 		}else if (argsAction == "c") {
 			job = new JobCrush({
-				inputFile:f,
+				inputFile:FILE,
 				outputDir:argsOutput,
 				ac:AC, dc:DC,
 				flag_convert_only:argsOptions.enc
@@ -218,9 +228,30 @@ class Main extends BaseApp
 					P2.print1('  Size : {1} -> {0}', [StrTool.bytesToMBStr(j.original_size)+'MB', StrTool.bytesToMBStr(j.final_size)+'MB']);					
 				};
 		}
-		// This will autoprint JOB progress
-		var rep = new CJobReport(job, false, true);
+	
+		// -------- FORK, send progress
+		if (argsOptions.fork)
+		job.events.on("jobStatus", (s, j)->{
+			if (s == progress) {
+				js.Node.process.send({progress:job.PROGRESS_TOTAL, msg:"progress"});
+				return;
+			}
+			if (s == start) {
+				js.Node.process.send({msg:"start", file:FILE, jobID:job.sid});
+				return;
+			}
+			if (s == complete){
+				js.Node.process.send({msg:"complete", file:FILE, jobID:job.sid});
+			}
+		});
+		// --------------------------------------------
+		
+		if (!SILENT)
+		{
+			// This will autoprint JOB progress
+			var rep = new CJobReport(job, false, true);
 			rep.onComplete = postInfos;
+		}
 		
 		job.MAX_CONCURRENT = CDCRUSH.MAX_TASKS;
 		job.onComplete = do_nextFile;

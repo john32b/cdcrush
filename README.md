@@ -2,7 +2,7 @@
 # CDCRUSH (node.js)
 
 **Name**: CDCRUSH, *Highly compress cd-image games*  
-**Version:** 1.5.1 **Platform:** Windows  
+**Version:** 1.5.2 **Platform:** Windows  
 **Language:** HAXE compiled to Node.js, **License**: MIT  
 **Project Page and Sources:** [https://github.com/johndimi/cdcrush](https://github.com/johndimi/cdcrush)   
 **Sister Project**: [cdcrush.net](https://github.com/johndimi/cdcrush.net)
@@ -141,8 +141,27 @@ Just use the option `-enc` with the **crush** or **restore** action. *(For when 
 ![Convert to encoded audio/cue Example](images/convert_example.png)
 <sup>Example of what this operation does.</sup>
 
-## :exclamation: CHANGELOG
-See [`CHANGELOG.MD`](CHANGELOG.md)
+## Called as a FORK from another nodeJS Script
+
+You can run cdcrush using `child_process.fork`. You MUST provide the `-fork` argument.
+It will push out messages to the parent process with `process.send()`. The parent process can listen to these using `process.on('message',(data)->{...})`
+
+- **When a Job Starts:**
+  `{ msg:"start", file, jobID }`
+  `file`: CUE/ARC file being processed
+  `jobID`: convert/crush/restore
+
+- **When a Job Ends:**
+  `{ msg:"complete", file, jobID }`
+  `file`: CUE/ARC file being processed
+  `jobID`: convert/crush/restore
+
+- **For Progress:**
+
+  `{ msg:"progress", progress }`
+  `progress`: INT Percentage of job completion, 0-100 
+
+  
 
 
 ## :clipboard: Q&A

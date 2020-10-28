@@ -3,7 +3,12 @@
 CDCRUSH.nodejs CHANGELOG:
 =========================
 
+## V1.5.2 (2020-10)
+
+- Can be forked and run with `child_process.fork` from another JS Script and push out status messages.
+
 ## V 1.5.1 (2020-10)
+
 - More audio encoding options. Now it has 4 options `lowest,low,medium,high`
 - Fixed bug where filenames having`[ ]` characters in their name would not get colored correctly in the terminal (visual bug)
 
