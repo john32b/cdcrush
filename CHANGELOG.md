@@ -24,7 +24,7 @@ CDCRUSH.nodejs CHANGELOG:
 
 ## V 1.4 (April 2018)
 
-- Compatible with the [**.net** version](https://github.com/johndimi/cdcrush.net) of cdcrush
+- Compatible with the [**.net** version](https://github.com/john32b/cdcrush.net) of cdcrush
 - Can encode tasks in parallel `( set maximum threads with -threads )`
 - Can select freearc compression level `( with -cl )`
 - Added audio codecs MP3 and OPUS, `( select audio codec with -ac )`

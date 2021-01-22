@@ -1,8 +1,6 @@
 /****
  * FFmpegAudio Interface
  * -------
- * johndimi, johndimi@outlook.com
- * -------
  * @requires: [FFmpeg.exe]
  * @supports: nodeJS
  * @platform: windows

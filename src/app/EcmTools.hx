@@ -1,8 +1,6 @@
 /****
  * ECM Tools interface
  * -------
- * johndimi, johndimi@outlook.com
- * -------
  * @requires: 	[ecm.exe, unecm.exe] Windows
  * 				[ecm-compress,ecm-uncompress] Linux
  * 

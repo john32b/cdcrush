@@ -5,7 +5,6 @@
  *  \___|___/   \___|_|_\\___/|___/_||_|
  * 
  * == CDCRUSH.hx
- * @author: JohnDimi, <johndimi@outlook.com>
  * ----------------------------------------------
  * - CDCRUSH main engine class
  * ----------------------------------------------
@@ -33,12 +32,12 @@ class CDCRUSH
 	//====================================================;
 	
 	// -- Program Infos
-	public static inline var AUTHORNAME = "John Dimi";
+	public static inline var AUTHORNAME = "John32B";
 	public static inline var PROGRAM_NAME = "cdcrush";
 	public static inline var PROGRAM_VERSION = "1.5.2";
 	public static inline var PROGRAM_SHORT_DESC = "Highly compress cd-image games";
 	public static inline var LINK_DONATE = "https://www.paypal.me/johndimi";
-	public static inline var LINK_SOURCE = "https://github.com/johndimi/cdcrush";
+	public static inline var LINK_SOURCE = "https://github.com/john32b/cdcrush";
 	public static inline var CDCRUSH_SETTINGS = "crushdata.json";
 	public static inline var CDCRUSH_COVER = "cover.jpg";	// Unused in CLI modes
 	public static inline var CUE_EXTENSION = ".cue";

@@ -4,9 +4,9 @@
 **Name**: CDCRUSH, *Highly compress cd-image games*  
 **Version:** 1.5.2 **Platform:** Windows  
 **Language:** HAXE compiled to Node.js, **License**: MIT  
-**Project Page and Sources:** [https://github.com/johndimi/cdcrush](https://github.com/johndimi/cdcrush)   
-**Sister Project**: [cdcrush.net](https://github.com/johndimi/cdcrush.net)
-**Author:** John Dimi :computer:  
+**Project Page and Sources:** https://github.com/john32b/cdcrush  
+**Sister Project**: [cdcrush.net](https://github.com/john32b/cdcrush.net)
+**Author:** John32B
 
 ## :mega: What is it
 
@@ -49,7 +49,7 @@ Then it can **restore** a compressed archive back to a CD Image `.cue/.bin`. Als
   - [cdrtfe](https://cdrtfe.sourceforge.io/cdrtfe/index_en.html), open source
   - [ImgBurn](http://imgburn.com), free but not open source.
 - This is a **CLI** application. Some basic CLI knowledge is required. 
-- There is also a [dotNet version of cdcrush](https://github.com/johndimi/cdcrush.net) it's simpler to use, but it doesn't support batch operations.
+- There is also a [dotNet version of cdcrush](https://github.com/john32b/cdcrush.net) it's simpler to use, but it doesn't support batch operations.
 - When selecting **data compression**, FreeArc offers the best ratios *(the default)*
 
 ## :large_blue_diamond: Installing cdcrush
@@ -181,7 +181,7 @@ It will push out messages to the parent process with `process.send()`. The paren
 
 ## :stars: dotNET Version
 
-Checkout the  [dotNet version](https://github.com/johndimi/cdcrush.net), it offers a GUI, so it simpler to use, but it doesn't support batch operations. *Windows Only*
+Checkout the  [dotNet version](https://github.com/john32b/cdcrush.net), it offers a GUI, so it simpler to use, but it doesn't support batch operations. *Windows Only*
 
 
 

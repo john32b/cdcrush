@@ -2,8 +2,6 @@
  * FreeArc
  * Interface for the CLI app
  * -------
- * johndimi, johndimi@outlook.com
- * -------
  * @requires: [Arc.exe]
  * @supports: nodeJS
  * @platform: windows
