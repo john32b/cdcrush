@@ -13,10 +13,10 @@
 	"storage"
   ],
   "homepage": "https://github.com/john32b/cdcrush",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "author": {
     "name": "John32B",
-    "email": "johndimi@outlook.com"
+    "email": "john32b@outlook.com"
   },
   "engines": {
     "node": ">= 10.15.3"
