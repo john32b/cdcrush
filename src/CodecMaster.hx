@@ -32,7 +32,6 @@ typedef SettingsTuple = {
    ------------
    
 	- Responsible for creating audio/archive encoding strings from user settings
-	- Every Audio/Archive codec supports (3) arbitrary quality settings
 	
 **/
 
@@ -76,6 +75,9 @@ class CodecMaster
 	public static var audio:Map<String,AudioInfo> = [
 	
 		"MP3" => {
+				// https://trac.ffmpeg.org/wiki/Encode/MP3
+				// NO 320CBR because according to the ffmpeg wiki it is wasteful
+				// If you need higher quality, consider OPUS320 or FLAC
 				name:"MP3", ext:".mp3",
 				qReal:['9', '7', '5', '1'],
 				qName:['65', '100', '130', '225'], p:'k Vbr',
@@ -208,9 +210,16 @@ class CodecMaster
 	}//---------------------------------------------------;
 	
 	/**
-	   Parses from ID:QUALITY to proper string
+	   Parses from ID:QUALITY to proper normalized string
 	   - Capitalize ID
 	   - Null if any Errors
+	   - e.g. "mp3:" -> "MP3:2"
+	   
+	     @param	S	Input String. e.g. "mp3:0" "arc:2"
+	     @param	M	ID names of Achiver/Codec ID ['MP3','VORBIS'.....]
+	     @param	MAX Maximum number allowed in string
+	     @param	DEF Default number to put in string, if ommited
+	     @return Normalized/Fixed string 
 	**/
 	static function parseCodecTuple(S:String, M:Array<String>, MAX:Int, DEF:Int):String
 	{

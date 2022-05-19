@@ -124,7 +124,13 @@ class JobCrush extends CJob
 		{
 			for (tr in cd.tracks)
 			{
-				if (p.flag_convert_only && tr.isData) continue;	// Do not Compress Data to ECM
+				if (p.flag_convert_only && tr.isData) 
+				{
+					// Do not Compress Data to ECM, leave it as is
+					// Calculate MD5 here, since this is normally done in TaskEncodeTrack()
+					tr.md5 = FileTool.getFileMD5(tr.workingFile);
+					continue;
+				}
 				addNextAsync(new TaskEncodeTrack(tr));
 			}
 			

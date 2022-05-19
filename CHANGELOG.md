@@ -3,12 +3,14 @@
 CDCRUSH.nodejs CHANGELOG:
 =========================
 
-## V1.5.2 (2020-10)
+## V1.5.4 (2022-05)
+- (BUGFIX) When trying to cut a single .BIN that was not divisible by sector size, it would crash.
+- (BUGFIX) When converting single .BIN to encoded tracks, it would not generate the MD5 for the data tracks with the `-nfo` option
 
+## V1.5.2 (2020-10)
 - Can be forked and run with `child_process.fork` from another JS Script and push out status messages.
 
 ## V 1.5.1 (2020-10)
-
 - More audio encoding options. Now it has 4 options `lowest,low,medium,high`
 - Fixed bug where filenames having`[ ]` characters in their name would not get colored correctly in the terminal (visual bug)
 
@@ -23,7 +25,6 @@ CDCRUSH.nodejs CHANGELOG:
 
 
 ## V 1.4 (April 2018)
-
 - Compatible with the [**.net** version](https://github.com/john32b/cdcrush.net) of cdcrush
 - Can encode tasks in parallel `( set maximum threads with -threads )`
 - Can select freearc compression level `( with -cl )`
@@ -37,17 +38,14 @@ CDCRUSH.nodejs CHANGELOG:
 
 
 ## V 1.1.2
-
 - BUGFIX, Supports filenames with a single bracket in the cue files
 - EXPERIMENTAL : Flag "-s", can restore multitrack games into a single CUE/BIN file
 	
 ## V 1.1.1
-
 - BUGFIX, Can now restore .arc files made with any version of CDCRUSH,
 		  The issue was on the djNode CDInfo class
 
 ## V 1.1 
-
 - BUGFIX, You can now use spaces and symbols at the pathnames. e.g "C:/@ @ #$%^ games/isos @#/"
 - NEW, Run with "-f" to restore ARC files to separate folders.
 - NEW, Run with "-w" to overwrite any files during the convertion.

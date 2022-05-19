@@ -175,7 +175,10 @@ class CDInfos
 			// Get sizes
 			var finfo = FileSystem.stat(t.workingFile);
 			t.byteSize = finfo.size;
-			t.sectorSize = Math.ceil(t.byteSize / SECTOR_SIZE);
+			t.sectorSize = Math.floor(t.byteSize / SECTOR_SIZE);
+				// ^ CD bytes could be slighly bigger than actual sector sizes
+				//   ceil would produce sectors that do not point to any data.
+				//   using floor from now on
 			
 			// Rare but worth checking
 			if (t.sectorSize <= 0){
@@ -618,7 +621,7 @@ class CDInfos
 	#if debug
 	function LOGINFOS()
 	{
-		LOG('cdTitle:$CD_TITLE, cdType:$CD_TYPE , totalSize:$CD_TOTAL_SIZE');
+		LOG('cdTitle:$CD_TITLE, cdType:$CD_TYPE , totalSize:$CD_TOTAL_SIZE, ssize:$SECTOR_SIZE');
 		LOG('multiFile:$MULTIFILE, audio:$CD_AUDIO_QUALITY, tracks:${tracks.length}');
 		for (i in tracks) LOG(i.toString_());
 		LOG(' ---');
